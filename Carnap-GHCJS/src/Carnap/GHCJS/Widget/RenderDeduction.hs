@@ -3,10 +3,13 @@ module Carnap.GHCJS.Widget.RenderDeduction (renderDeductionFitch, renderDeductio
 
 import Lib
 import Data.Maybe (catMaybes)
+import Data.Typeable
 import Carnap.Core.Data.Types
 import Carnap.Core.Data.Classes
 import Carnap.GHCJS.Widget.ProofCheckBox
 import Carnap.Calculi.NaturalDeduction.Syntax 
+import Carnap.Calculi.NaturalDeduction.Parser.Montague (toProofTreeMontague)
+import Carnap.Languages.ClassicalSequent.Syntax
 import GHCJS.DOM.Types (Document,Element)
 import GHCJS.DOM.Element (setInnerHTML,setAttribute)
 import GHCJS.DOM.Node (appendChild)
@@ -17,7 +20,7 @@ import Data.List (intercalate)
 deductionToForest n ded@(d:ds) = map toTree chunks
     where chunks = chunkBy n ded
           toTree (Left x) = Node x []
-          toTree (Right (x:xs)) = Node x (deductionToForest (depth $ snd x) ((0,SeparatorLine 0):xs))
+          toTree (Right (x:xs)) = Node x (deductionToForest (depth $ snd x) xs)
 deductionToForest _ [] = []
 
 chunkBy n [] = []
@@ -56,7 +59,7 @@ renderTreeFitch ded w calc = treeToElement asLine asSubproof
           finalPrem = length (takeWhile (\d -> isPremiseLine d && depth d == 0) ded)
 
 --this is for Kalish and Montague Proofs
-renderTreeMontague w calc = treeToElement asLine asSubproof
+renderTreeMontague ded w calc = treeToElement asLine asSubproof
     where asLine (n,AssertLine f r _ deps) = do (theWrapper,theLine,theForm,theRule) <- lineBase w calc n (displayVia calc f) (Just (r,deps)) "assertion"
                                                 appendChild theLine (Just theForm)
                                                 appendChild theLine (Just theRule)
@@ -76,7 +79,9 @@ renderTreeMontague w calc = treeToElement asLine asSubproof
                                                   appendChild theLine (Just theRule)
                                                   return theWrapper
 
-          asLine (n,ShowLine f _)   = do (theWrapper,theLine,theForm,_) <- lineBase w calc n (displayVia calc f) norule "show"
+          asLine (n,ShowLine f _)   = do (theWrapper,theLine,theForm,_) <-  if complete n
+                                                                            then lineBase w calc n (displayVia calc f) norule "show-cross"
+                                                                            else lineBase w calc n (displayVia calc f) norule "show"
                                          (Just theHead) <- createElement w (Just "span")
                                          setInnerHTML theHead (Just $ "Show: ")
                                          appendChild theLine (Just theHead)
@@ -94,6 +99,9 @@ renderTreeMontague w calc = treeToElement asLine asSubproof
           asSubproof l ls = do setAttribute l "class" "subproof"
                                mapM_ (appendChild l . Just) ls
 
+          complete x = case toProofTreeMontague ded x of 
+                            Left _ -> False
+                            Right _ -> True
 
 --The basic parts of a line, with Maybes for the fomula and the rule-dependency pair.
 -- lineBase :: (Show a, Show b) => 
@@ -180,9 +188,9 @@ renderDeductionFitch :: (Show r,Schematizable (lex (FixLang lex)), CopulaSchema 
     Document -> NaturalDeductionCalc r lex sem -> [DeductionLine r lex sem] -> IO Element
 renderDeductionFitch w calc ded = renderDeduction "fitchDisplay" (renderTreeFitch ded) w calc ded
 
-renderDeductionMontague :: (Show r,Schematizable (lex (FixLang lex)), CopulaSchema (FixLang lex)) => 
+renderDeductionMontague :: (Show r,Schematizable (lex (FixLang lex)), CopulaSchema (FixLang lex), Inference r lex sem, Sequentable lex, Typeable sem) => 
     Document -> NaturalDeductionCalc r lex sem -> [DeductionLine r lex sem] -> IO Element
-renderDeductionMontague = renderDeduction "montagueDisplay" renderTreeMontague
+renderDeductionMontague w calc ded = renderDeduction "montagueDisplay" (renderTreeMontague ded) w calc ded
 
 renderDeductionLemmon ::  (Show t,Schematizable (t1 (FixLang t1)), CopulaSchema (FixLang t1)) => 
     Document -> NaturalDeductionCalc r lex sem -> [DeductionLine t t1 t2] -> IO Element
