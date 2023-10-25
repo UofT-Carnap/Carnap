@@ -4,7 +4,7 @@ module Carnap.Languages.PurePropositional.Parser
     , thomasBolducZachOpts, thomasBolducZach2019Opts, hardegreeOpts, arthurOpts, standardOpTable, standardOpTableStrict
     , calgaryOpTable, calgary2019OpTable, hausmanOpTable, howardSnyderOpTable, gamutOpTable
     , gamutOpts, bonevacOpts, howardSnyderOpts, hurleyOpts, gregoryOpts, magnusOpts, extendedPropSeqParser
-    , englishPropFormulaParser, englishPropFormulaParserStrict
+    , englishPropFormulaParser, englishPropFormulaParserStrict, kooSCFormulaParser
     ) where
 
 import Carnap.Core.Data.Types
@@ -120,6 +120,14 @@ purePropFormulaParser opts = buildExpressionParser (opTable opts) subFormulaPars
     --subformulas are either
     where subFormulaParser = ((parenRecur opts) opts purePropFormulaParser <* spaces) --formulas wrapped in parentheses
                           <|> unaryOpParser [parseNeg] subFormulaParser --negations or modalizations of subformulas
+                          <|> try (atomicSentenceParser opts <* spaces)--or atoms
+                          <|> (if hasBooleanConstants opts then try (booleanConstParser <* spaces) else parserZero)
+                          <|> ((schemevarParser <* spaces) <?> "")
+
+kooSCFormulaParser :: Monad m => PurePropositionalParserOptions u m -> ParsecT String u m PureForm
+kooSCFormulaParser opts = buildExpressionParser (opTable opts) subFormulaParser
+    where subFormulaParser = ((parenRecur opts) opts purePropFormulaParser <* spaces) --formulas wrapped in parentheses
+                          <|> unaryOpParser [parseNegStrict] subFormulaParser --negations or modalizations of subformulas
                           <|> try (atomicSentenceParser opts <* spaces)--or atoms
                           <|> (if hasBooleanConstants opts then try (booleanConstParser <* spaces) else parserZero)
                           <|> ((schemevarParser <* spaces) <?> "")

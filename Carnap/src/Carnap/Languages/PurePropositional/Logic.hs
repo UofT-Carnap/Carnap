@@ -2,7 +2,7 @@
 module Carnap.Languages.PurePropositional.Logic 
     ( PropSequentCalc
     , parsePropLogic, PropLogic, propCalc, propCalcStrict
-    , parseMontagueSC, MontagueSC, montagueSCCalc
+    , parseMontagueSC, MontagueSC, montagueSCCalc, kooSCCalc
     , parseLogicBookSD, LogicBookSD, logicBookSDCalc
     , parseLogicBookSDPlus,  LogicBookSDPlus, logicBookSDPlusCalc
     , parseHowardSnyderSL, HowardSnyderSL, howardSnyderSLCalc
@@ -95,6 +95,7 @@ ofPropSys f sys | sys == "LogicBookSD"                   = Just $ f logicBookSDC
                 | sys == "magnusSL"                      = Just $ f magnusSLCalc
                 | sys == "magnusSLPlus"                  = Just $ f magnusSLPlusCalc
                 | sys == "montagueSC"                    = Just $ f montagueSCCalc
+                | sys == "KooKMM-SL"                     = Just $ f kooSCCalc
                 | sys == "prop"                          = Just $ f propCalc
                 | sys == "propStrict"                    = Just $ f propCalcStrict
                 | sys == "propNonC"                      = Just $ f propCalcNonC
