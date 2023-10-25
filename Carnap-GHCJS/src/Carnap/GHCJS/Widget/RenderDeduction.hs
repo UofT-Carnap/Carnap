@@ -20,7 +20,7 @@ import Data.List (intercalate)
 deductionToForest n ded@(d:ds) = map toTree chunks
     where chunks = chunkBy n ded
           toTree (Left x) = Node x []
-          toTree (Right (x:xs)) = Node x (deductionToForest (depth $ snd x) xs)
+          toTree (Right (x:xs)) = Node x (deductionToForest (depth $ snd x) ((0,SeparatorLine 0):xs))
 deductionToForest _ [] = []
 
 chunkBy n [] = []
@@ -56,6 +56,7 @@ renderTreeFitch ded w calc = treeToElement asLine asSubproof
 
           asSubproof l ls = do setAttribute l "class" "subproof"
                                mapM_ (appendChild l . Just) ls
+
           finalPrem = length (takeWhile (\d -> isPremiseLine d && depth d == 0) ded)
 
 --this is for Kalish and Montague Proofs
@@ -79,18 +80,19 @@ renderTreeMontague ded w calc = treeToElement asLine asSubproof
                                                   appendChild theLine (Just theRule)
                                                   return theWrapper
 
-          asLine (n,ShowLine f _)   = do (theWrapper,theLine,theForm,_) <-  if complete n
-                                                                            then lineBase w calc n (displayVia calc f) norule "show-cross"
-                                                                            else lineBase w calc n (displayVia calc f) norule "show"
+          asLine (n,ShowLine f _)   = do (theWrapper,theLine,theForm,_) <- lineBase w calc n (displayVia calc f) norule "show"
                                          (Just theHead) <- createElement w (Just "span")
                                          setInnerHTML theHead (Just $ "Show: ")
                                          appendChild theLine (Just theHead)
                                          appendChild theLine (Just theForm)
+                                         if complete n then do
+                                            setAttribute theLine "class" "show-cross" 
+                                         else do
+                                            setAttribute theLine "class" "show"
                                          return theWrapper
 
           asLine (n,QedLine r _ deps) = do (theWrapper,theLine,_,theRule) <- lineBase w calc n noform (Just (r,deps)) "qed"
                                            appendChild theLine (Just theRule)
-                                           --appendChild theWrapper (Just theLine)
                                            return theWrapper
 
           asLine _ = do (Just sl) <- createElement w (Just "div")
@@ -99,6 +101,7 @@ renderTreeMontague ded w calc = treeToElement asLine asSubproof
           asSubproof l ls = do setAttribute l "class" "subproof"
                                mapM_ (appendChild l . Just) ls
 
+          -- check whether montague deduction starting at line x is complete
           complete x = case toProofTreeMontague ded x of 
                             Left _ -> False
                             Right _ -> True
