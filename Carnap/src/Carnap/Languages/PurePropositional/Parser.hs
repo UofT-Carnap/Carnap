@@ -114,7 +114,10 @@ howardSnyderOpts = extendedLetters
           hsDispatch opt rw = (wrappedWith '{' '}' (rw opt) <|> wrappedWith '(' ')' (rw opt) <|> wrappedWith '[' ']' (rw opt)) >>= noatoms
 
 kooOpts :: Monad m => PurePropositionalParserOptions u m
-kooOpts = extendedLetters { opTable = kooOpTable }
+kooOpts = standardLetters
+                { opTable = kooOpTable
+                , atomicSentenceParser = sentenceLetterParser "PQRSTUVWXYZ"
+                }
 
 --this parses as much formula as it can, but is happy to return an output if the
 --initial segment of a string is a formula
