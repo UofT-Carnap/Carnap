@@ -24,9 +24,21 @@ parseKooSLProof :: RuntimeDeductionConfig PurePropLexicon (Form Bool)
                      -> String -> [DeductionLine MontagueSC PurePropLexicon (Form Bool)]
 parseKooSLProof rtc = toDeductionMontague (parseMontagueSC rtc) (kooSLFormulaParser extendedLetters)
 
+kooSLNotation :: String -> String
+kooSLNotation x = case runParser altParser 0 "" x of
+                        Left e -> show e
+                        Right s -> s
+    where altParser = do s <- handleChar <|> fallback
+                         rest <- (eof >> return "") <|> altParser
+                         return $ s ++ rest
+          handleChar = (char '⊢' >> return "∴")
+          fallback = do c <- anyChar 
+                        return [c]
+
 kooSLCalc = mkNDCalc
     { ndRenderer = MontagueStyle
     , ndParseProof = parseKooSLProof
     , ndProcessLine = processLineMontague
     , ndProcessLineMemo = Nothing
+    , ndNotation = kooSLNotation
     } 
