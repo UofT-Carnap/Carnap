@@ -81,6 +81,7 @@ activate cls extra chunk
     | "IchikawaJenkinsSL"`elem` cls = exTemplate [("system", "ichikawaJenkinsSL"), ("options","render")]
     | "JohnsonSL"        `elem` cls = exTemplate [("system", "johnsonSL")]
     | "JohnsonSLPlus"    `elem` cls = exTemplate [("system", "johnsonSLPlus")]
+    | "KooKMM-SL"        `elem` cls = exTemplate [("system", "KooKMM-SL"),("guides","montague"),("options","indent fonts resize render")]
     | "LemmonProp"       `elem` cls = exTemplate [("system", "lemmonProp"), ("options","hideNumbering render resize")] 
     | "LemmonQuant"      `elem` cls = exTemplate [("system", "lemmonQuant"), ("options","hideNumbering render resize")] 
     | "LandeProp"        `elem` cls = exTemplate [("system", "landeProp"), ("options","hideNumbering render resize")] 

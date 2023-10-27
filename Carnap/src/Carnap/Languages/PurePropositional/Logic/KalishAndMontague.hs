@@ -1,6 +1,6 @@
 {-#LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses #-}
 module Carnap.Languages.PurePropositional.Logic.KalishAndMontague
-    (parseMontagueSC,  parseMontagueSCProof, MontagueSC, montagueSCCalc, kooSCCalc) where
+    (parseMontagueSC,  parseMontagueSCProof, MontagueSC, montagueSCCalc) where
 
 import Data.Map as M (lookup, Map)
 import Text.Parsec
@@ -132,14 +132,3 @@ montagueSCCalc = mkNDCalc
     , ndProcessLine = processLineMontague
     , ndProcessLineMemo = Nothing
     }
-
-parseKooSCProof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) 
-                     -> String -> [DeductionLine MontagueSC PurePropLexicon (Form Bool)]
-parseKooSCProof rtc = toDeductionMontague (parseMontagueSC rtc) (kooSCFormulaParser extendedLetters)
-
-kooSCCalc = mkNDCalc
-    { ndRenderer = MontagueStyle
-    , ndParseProof = parseKooSCProof
-    , ndProcessLine = processLineMontague
-    , ndProcessLineMemo = Nothing
-    } 
