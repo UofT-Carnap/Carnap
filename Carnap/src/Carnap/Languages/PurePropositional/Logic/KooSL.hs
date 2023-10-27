@@ -15,14 +15,14 @@ import Carnap.Calculi.NaturalDeduction.Checker
 import Carnap.Languages.ClassicalSequent.Syntax
 import Carnap.Languages.ClassicalSequent.Parser
 import Carnap.Languages.PurePropositional.Logic.Rules
-import Carnap.Languages.PurePropositional.Logic.KalishAndMontague (parseMontagueSC,  parseMontagueSCProof, MontagueSC, montagueSCCalc)
+import Carnap.Languages.PurePropositional.Logic.KalishAndMontague (parseMontagueSC, MontagueSC)
 
 --A system for propositional logic resembling the proof system from Kalish
 --and Montague's LOGIC, with derived rules, adding Prof. Alex Koo's requested edits.
 
 parseKooSLProof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) 
                      -> String -> [DeductionLine MontagueSC PurePropLexicon (Form Bool)]
-parseKooSLProof rtc = toDeductionMontague (parseMontagueSC rtc) (kooSLFormulaParser extendedLetters)
+parseKooSLProof rtc = toDeductionMontague (parseMontagueSC rtc) (kooSLFormulaParser kooOpts)
 
 kooSLNotation :: String -> String
 kooSLNotation x = case runParser altParser 0 "" x of
