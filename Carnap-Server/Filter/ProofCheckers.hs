@@ -191,6 +191,7 @@ toPlayground cls extra content
     | "IchikawaJenkinsSL"`elem` cls = playTemplate [("system", "ichikawaJenkinsSL"), ("options","render")]
     | "JohnsonSL"        `elem` cls = playTemplate [("system", "johnsonSL")]
     | "JohnsonSLPlus"    `elem` cls = playTemplate [("system", "johnsonSLPlus")]
+    | "KooKMM-SL"        `elem` cls = playTemplate [("system", "KooKMM-SL"),("guides","montague"),("options","indent fonts resize render")]
     | "LemmonProp"       `elem` cls = playTemplate [("system", "lemmonProp"), ("options","hideNumbering render resize")] 
     | "LemmonQuant"      `elem` cls = playTemplate [("system", "lemmonQuant"), ("options","hideNumbering render resize")] 
     | "LandeProp"        `elem` cls = playTemplate [("system", "landeProp"), ("options","hideNumbering render resize")] 
