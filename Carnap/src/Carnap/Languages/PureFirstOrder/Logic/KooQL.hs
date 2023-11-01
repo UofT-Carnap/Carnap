@@ -9,9 +9,6 @@ import Text.Parsec.Expr
 import Control.Monad.Identity
 import Carnap.Core.Unification.Unification (applySub)
 import Carnap.Core.Data.Types
-import Carnap.Languages.PureFirstOrder.Syntax
-import Carnap.Languages.PureFirstOrder.Parser
-import qualified Carnap.Languages.PurePropositional.Logic as P
 import Carnap.Calculi.Util
 import Carnap.Calculi.NaturalDeduction.Syntax
 import Carnap.Calculi.NaturalDeduction.Parser
@@ -24,7 +21,9 @@ import Carnap.Languages.Util.GenericParsers
 import Carnap.Languages.PurePropositional.Logic.Rules (axiom,premConstraint)
 import Carnap.Languages.PurePropositional.Logic.KooSL
 import Carnap.Languages.PurePropositional.Parser
+import Carnap.Languages.PurePropositional.Util
 import Carnap.Languages.PureFirstOrder.Parser
+import Carnap.Languages.PureFirstOrder.Syntax
 import Carnap.Languages.PureFirstOrder.Logic.Rules
 import Carnap.Languages.PureFirstOrder.Logic.KalishAndMontague
 
@@ -43,10 +42,11 @@ kooQLParserOptions = FirstOrderParserOptions
                          , constantParser = Just (parseConstant "abcdefgh") 
                          , functionParser = Just (\x -> kooParseFunctionSymbol "abcdefgh" x)
                          , hasBooleanConstants = False
-                         , parenRecur = \opt recurWith  -> parenParser (recurWith opt)
+                         , parenRecur = \opt recurWith  -> parenParser (recurWith opt) >>= boolean
                          , opTable = kooOpTable
                          , finalValidation = const (pure ())
                          }
+                    where boolean a = if isBoolean a then return a else unexpected "atomic or quantified sentence wrapped in parentheses"
                          
 kooSubFormulaParser :: ( BoundVars lex
                         , BooleanLanguage (FixLang lex (Form Bool))
@@ -55,12 +55,11 @@ kooSubFormulaParser :: ( BoundVars lex
                         ) =>
     (FirstOrderParserOptions lex u Identity -> Parsec String u (FixLang lex (Form Bool))) -> FirstOrderParserOptions lex u Identity
         -> Parsec String u (FixLang lex (Form Bool))
-kooSubFormulaParser fp opts = try (unaryOpParser [parseNegStrict] (kooSubFormulaParser
-                             fp opts))
-                             <|> try (quantifiedSentenceParser' opts vparser (kooSubFormulaParser
-                             fp opts) <* spaces)
-                             <|> (atomicSentenceParser opts tparser <* spaces)
-                             <|> if hasBooleanConstants opts then try (booleanConstParser <* spaces) else parserZero
+kooSubFormulaParser fp opts =   try (parenRecur opts opts fp <* spaces)
+                                <|> try (unaryOpParser [parseNegStrict] (kooSubFormulaParser fp opts))
+                                <|> try (quantifiedSentenceParser' opts vparser (kooSubFormulaParser fp opts) <* spaces)
+                                <|> (atomicSentenceParser opts tparser <* spaces)
+                                <|> if hasBooleanConstants opts then try (booleanConstParser <* spaces) else parserZero
     where cparser = case constantParser opts of Just c -> c
                                                 Nothing -> mzero
           --Function symbols, if there are any
@@ -88,4 +87,6 @@ kooQLCalc = mkNDCalc
     , ndProcessLine = hoProcessLineMontague
     , ndProcessLineMemo = Just hoProcessLineMontagueMemo
     , ndNotation = kooSLNotation
+    , ndParseForm = kooQLFormulaParser
+    , ndParseSeq = parseSeqOver kooQLFormulaParser
     }

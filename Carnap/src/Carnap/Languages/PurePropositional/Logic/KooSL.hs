@@ -41,4 +41,6 @@ kooSLCalc = mkNDCalc
     , ndProcessLine = processLineMontague
     , ndProcessLineMemo = Nothing
     , ndNotation = kooSLNotation
+    , ndParseForm = (kooSLFormulaParser kooOpts)
+    , ndParseSeq = parseSeqOver (kooSLFormulaParser kooOpts)
     } 
