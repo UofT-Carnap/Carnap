@@ -33,8 +33,8 @@ import Data.Either (isLeft,isRight)
 import Data.Map as M (Map, lookup, foldr, insert, fromList, toList)
 import Data.IORef (newIORef, IORef, readIORef,writeIORef, modifyIORef)
 import Data.List (intercalate)
-import Data.Text (pack, Text)
-import Control.Monad (mplus, forM_)
+import Data.Text (pack)
+import Control.Monad (mplus)
 import Control.Monad.IO.Class (liftIO)
 import Control.Lens
 
@@ -154,7 +154,6 @@ resetTextsToFirstOption parentDiv = do
         case name of
             Just "Domain" -> setValue (castToHTMLTextAreaElement textareaElem) (Just "0")
             Just _ -> setValue (castToHTMLTextAreaElement textareaElem) (Just "")
-    -- setValue (castToHTMLTextAreaElement textareaElem) (Just "")
     resetTextArea Nothing = return ()
 
 submitCounterModel:: IsEvent e => Document -> Map String String -> Element -> IO (Either String ())
