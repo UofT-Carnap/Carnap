@@ -88,10 +88,13 @@ activateTranslate w (Just (i,o,opts)) = do
                            ref <- newIORef False
                            let submit = submitTrans w opts i ref fs parser checker tests
                            btStatus <- createSubmitButton w bw submit opts
-                           setValue (castToHTMLInputElement i) (Just "") 
+                           
+                           -- Initally set input box to empty
+                           setValue (castToHTMLInputElement i) (Just "")
+                           
                            doOnce i input False $ liftIO $ btStatus Edited
                            setInnerHTML o (Just problem)
-                           mpar@(Just par) <- getParentNode o                                                   
+                           mpar@(Just par) <- getParentNode o               
                            insertBefore par (Just bw) (Just o)
                            Just wrapper <- getParentElement o
                            setAttribute i "enterKeyHint" "go"
@@ -102,6 +105,7 @@ activateTranslate w (Just (i,o,opts)) = do
                       (Left e) -> setInnerHTML o (Just $ show e)
                   _ -> print "translation was missing an option"
 activateChecker _ Nothing  = return ()
+
 
 tryTrans :: Eq (FixLang lex sem) => 
     Document -> Parsec String () (FixLang lex sem) -> BinaryTest lex sem -> UnaryTest lex sem
