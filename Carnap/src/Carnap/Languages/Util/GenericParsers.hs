@@ -255,7 +255,7 @@ kooParsePredicateSymbol s parseTerm = parse <?> "a predicate symbol"
                             m = maybe 0 id midx
                         ((char '(' *> argParserNoParen parseTerm (ppn (n + (m * 26)) AOne) <* char ')')
                             <|>
-                            argParserNoParen parseTerm (ppn (n + (m * 26)) AOne))
+                            argParseOne parseTerm (ppn (n + (m * 26)) AOne))
 
 quantifiedSentenceParser, lplQuantifiedSentenceParser, altAltQuantifiedSentenceParser, altQuantifiedSentenceParser, kooQuantifiedSentenceParser :: 
     ( QuantLanguage (FixLang lex f) (FixLang lex t)
@@ -513,6 +513,15 @@ argParserNoParen ::
 argParserNoParen pt p = do t <- pt
                            incrementHeadNoParen pt p t
                                <|> return (p :!$: t)
+
+argParseOne ::
+    ( Typeable b
+    , Typeable t2
+    , Incrementable lex t2
+    , Monad m) => ParsecT String u m (FixLang lex t2) -> FixLang lex (t2 -> b) 
+            -> ParsecT String u m (FixLang lex b)
+argParseOne pt p = do   t <- pt
+                        return (p :!$: t)
 
 incrementHeadNoParen :: 
     ( Monad m
