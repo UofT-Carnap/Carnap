@@ -136,7 +136,7 @@ kooSLNotation x = case runParser altParser 0 "" x of
     where altParser = do s <- handleChar <|> fallback
                          rest <- (eof >> return "") <|> altParser
                          return $ s ++ rest
-          handleChar = (char '⊢' >> return "∴")
+          handleChar = (char '⊢' >> return "∴") <|> (char '⊤' >> return " ")
           fallback = do c <- anyChar 
                         return [c]
 
