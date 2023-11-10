@@ -1,6 +1,6 @@
 {-#LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses #-}
 module Carnap.Languages.PurePropositional.Logic.KooSL
-    (parseKooSLProof, kooSLCalc, kooSLNotation, KooSL) where
+    (parseKooSLProof, kooSLCalc, kooSLNotation, KooSL, parseKooSL) where
 
 import Data.Map as M (lookup, Map)
 import Text.Parsec

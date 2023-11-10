@@ -25,7 +25,6 @@ import Carnap.Languages.PurePropositional.Util
 import Carnap.Languages.PureFirstOrder.Parser
 import Carnap.Languages.PureFirstOrder.Syntax
 import Carnap.Languages.PureFirstOrder.Logic.Rules
-import Carnap.Languages.PureFirstOrder.Logic.KalishAndMontague
 
 --------------------------------------------------------
 --2. Classical First-Order Logic
