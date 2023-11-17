@@ -89,10 +89,17 @@ activateTranslate w (Just (i,o,opts)) = do
                            let submit = submitTrans w opts i ref fs parser checker tests
                            btStatus <- createSubmitButton w bw submit opts
 
-                            -- Create and append logical symbol buttons
-                           bw2 <- createButtonWrapper w o
-                           let createSymbolBtn symbol = createSymbolButton w bw2 symbol (onSymbolClick i symbol)
-                           _ <- mapM createSymbolBtn ["→", "↔", "∧", "∨", "∀", "∃", "≠"]
+                            -- Create symbols pane and add buttons to it
+                           bw2 <- createButtonWrapperConst w o
+                           let createSymbolBtn symbol = createSymbolButton w bw2 symbol (insertSymbolClick i symbol)
+                           case (M.lookup "transtype" opts) of
+                                 (Just "prop") -> mapM createSymbolBtn ["→", "↔", "∧", "∨"]
+                                 _ -> mapM createSymbolBtn ["→", "↔", "∧", "∨", "∀", "∃", "≠"]
+                           symbolsPane <- createSymbolsPane w i
+                           appendChild symbolsPane (Just bw2)
+
+                           -- Get Show Symbols button
+                           showSymbolsBtn <- getShowSymbolsButton w symbolsPane                            
                            
                            -- Initally set input box to empty
                            setValue (castToHTMLInputElement i) (Just "")
@@ -101,7 +108,8 @@ activateTranslate w (Just (i,o,opts)) = do
                            setInnerHTML o (Just problem)
                            mpar@(Just par) <- getParentNode o               
                            insertBefore par (Just bw) (Just o)
-                           insertBefore par (Just bw2) (Just o)
+                           appendChild bw (Just showSymbolsBtn)
+                           insertBefore par (Just symbolsPane) (Just o)
                            Just wrapper <- getParentElement o
                            setAttribute i "enterKeyHint" "go"
                            translate <- newListener $ tryTrans w parser checker tests wrapper ref fs
@@ -111,21 +119,6 @@ activateTranslate w (Just (i,o,opts)) = do
                       (Left e) -> setInnerHTML o (Just $ show e)
                   _ -> print "translation was missing an option"
 activateChecker _ Nothing  = return ()
-
-createSymbolButton :: Document -> Element -> String -> EventM Element MouseEvent () -> IO Element
-createSymbolButton doc parent symbol clickHandler = do
-    (Just button) <- createElement doc (Just "button")
-    setInnerHTML button (Just symbol)
-    clickhand <- newListener clickHandler
-    addListener button click clickhand False
-    appendChild parent (Just button)
-    return button
-
-onSymbolClick :: Element -> String -> EventM Element MouseEvent ()
-onSymbolClick inputElement symbol = liftIO $ do
-    (Just val) <- getValue (castToHTMLInputElement inputElement)
-    let newValue = val ++ symbol
-    setValue (castToHTMLInputElement inputElement) (Just newValue)
 
 tryTrans :: Eq (FixLang lex sem) => 
     Document -> Parsec String () (FixLang lex sem) -> BinaryTest lex sem -> UnaryTest lex sem
