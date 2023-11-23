@@ -5,7 +5,6 @@ import Lib
 import Carnap.GHCJS.SharedTypes
 import Carnap.Core.Data.Types (Form(..), Term(..), Arity(..), Fix(..), FixLang, arityInt, FixLang, BoundVars, FirstOrderLex, CopulaSchema, EndLang)
 import Carnap.Core.Data.Classes
-import Data.Char (digitToInt)
 import Carnap.Core.Data.Util
 import Carnap.Core.Data.Optics (PrismSubstitutionalVariable, PrismLink, ReLex)
 import Carnap.Languages.Util.LanguageClasses
