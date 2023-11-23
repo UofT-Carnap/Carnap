@@ -28,7 +28,7 @@ import qualified GHCJS.DOM.HTMLSelectElement as S (getValue, setValue)
 import Text.Parsec
 import Data.Typeable (Typeable)
 import Data.List (nub, sort, sortOn)
-import Data.Maybe (catMaybes, fromMaybe)
+import Data.Maybe (catMaybes)
 import Data.Either (isLeft,isRight)
 import Data.Map as M (Map, lookup, foldr, insert, fromList, toList)
 import Data.IORef (newIORef, IORef, readIORef,writeIORef, modifyIORef)
@@ -407,7 +407,7 @@ getRelationInput w opts f mdl = case addRelation f mdl [] of
                                              let beforeParen = takeWhile (/= '(') blank_relation
 
                                              setInnerHTML relationLabel $ Just $ if "forallxStyle" `inOpts` opts 
-                                                                            then "extension(" ++ [head (show $ blankTerms f)] ++ superscriptCount ++ ") = {"
+                                                                            then "extension(" ++ [head (show $ blankTerms f)] ++ superscriptCount ++ ") = { "
                                                                             else beforeParen ++ superscriptCount ++ ": { " 
                                              (relationInput,parseWarn) <- parsingInput w (ntuples n) relationUpdater
                                              setAttribute relationInput "name" (show (blankTerms f))
@@ -444,8 +444,8 @@ getFunctionInput w opts f mdl = case addFunction f mdl [] of
                                                 let beforeParen = takeWhile (/= '(') blank_function
 
                                                 setInnerHTML functionLabel $ Just $ if "forallxStyle" `inOpts` opts
-                                                                                        then "extension(" ++ [head (show $ blankFuncTerms f)] ++ superscriptCount ++ ") = {"
-                                                                                        else beforeParen ++ superscriptCount ++ ": {"
+                                                                                        then "extension(" ++ [head (show $ blankFuncTerms f)] ++ superscriptCount ++ ") = { "
+                                                                                        else beforeParen ++ superscriptCount ++ ": { "
                                                 (functionInput,parseWarn) <- parsingInput w (nfunctuples (n + 1)) functionUpdater
                                                 setAttribute functionInput "name" (show (blankFuncTerms f))
                                                 setAttribute functionInput "rows" "1"
