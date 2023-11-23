@@ -1,10 +1,11 @@
-{-#LANGUAGE FlexibleContexts, RankNTypes, ConstraintKinds #-}
+{-#LANGUAGE FlexibleContexts, RankNTypes, ConstraintKinds, UnicodeSyntax #-}
 module Carnap.GHCJS.Action.CounterModel (counterModelAction) where
 
 import Lib
 import Carnap.GHCJS.SharedTypes
 import Carnap.Core.Data.Types (Form(..), Term(..), Arity(..), Fix(..), FixLang, arityInt, FixLang, BoundVars, FirstOrderLex, CopulaSchema, EndLang)
 import Carnap.Core.Data.Classes
+import Data.Char (digitToInt)
 import Carnap.Core.Data.Util
 import Carnap.Core.Data.Optics (PrismSubstitutionalVariable, PrismLink, ReLex)
 import Carnap.Languages.Util.LanguageClasses
@@ -28,7 +29,7 @@ import qualified GHCJS.DOM.HTMLSelectElement as S (getValue, setValue)
 import Text.Parsec
 import Data.Typeable (Typeable)
 import Data.List (nub, sort, sortOn)
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, fromMaybe)
 import Data.Either (isLeft,isRight)
 import Data.Map as M (Map, lookup, foldr, insert, fromList, toList)
 import Data.IORef (newIORef, IORef, readIORef,writeIORef, modifyIORef)
@@ -342,9 +343,13 @@ getConstInput w opts t mdl = case addConstant t mdl (Term 0) of
                                 Nothing -> return Nothing
                                 Just _ -> do
                                      Just constLabel <- createElement w (Just "label")
+                                     
+                                     let superscript = showSuperscript(0)
+                                     
                                      setInnerHTML constLabel $ Just $ if "forallxStyle" `inOpts` opts 
-                                                                          then "referent(" ++ show t ++ ") = " 
-                                                                          else show t ++ ": "
+                                                                          then "referent(" ++ show t ++ superscript ++ ") = "
+                                                                          else show t ++ superscript ++ ": " 
+                                                                          
                                      (constInput,parseWarn) <- parsingInput w (spaces *> parseInt <* spaces <* eof) constUpdater
                                      setAttribute constInput "name" (show t)
                                      setAttribute constInput "rows" "1"
@@ -394,10 +399,17 @@ getRelationInput w opts f mdl = case addRelation f mdl [] of
                                      case mlen of 
                                           Nothing -> return Nothing
                                           Just n -> do
+
                                              Just relationLabel <- createElement w (Just "label")
+
+                                             let blank_relation = show (blankTerms f)
+                                             let underscoreCount = length (filter (=='_') blank_relation)
+                                             let superscriptCount = showSuperscript underscoreCount
+                                             let beforeParen = takeWhile (/= '(') blank_relation
+
                                              setInnerHTML relationLabel $ Just $ if "forallxStyle" `inOpts` opts 
-                                                                            then "extension(" ++ [head (show $ blankTerms f)] ++ ") = "
-                                                                            else show (blankTerms f) ++ ": { "
+                                                                            then "extension(" ++ [head (show $ blankTerms f)] ++ superscriptCount ++ ") = {"
+                                                                            else beforeParen ++ superscriptCount ++ ": { " 
                                              (relationInput,parseWarn) <- parsingInput w (ntuples n) relationUpdater
                                              setAttribute relationInput "name" (show (blankTerms f))
                                              setAttribute relationInput "rows" "1"
@@ -426,9 +438,15 @@ getFunctionInput w opts f mdl = case addFunction f mdl [] of
                                              Nothing -> return Nothing
                                              Just n -> do
                                                 Just functionLabel <- createElement w (Just "label")
+
+                                                let blank_function = show (blankFuncTerms f)
+                                                let underscoreCount = length (filter (=='_') blank_function)
+                                                let superscriptCount = showSuperscript underscoreCount
+                                                let beforeParen = takeWhile (/= '(') blank_function
+
                                                 setInnerHTML functionLabel $ Just $ if "forallxStyle" `inOpts` opts
-                                                                                        then "extension(" ++ [head (show $ blankFuncTerms f)] ++ ") = "
-                                                                                        else show (blankFuncTerms f) ++ ": {"
+                                                                                        then "extension(" ++ [head (show $ blankFuncTerms f)] ++ superscriptCount ++ ") = {"
+                                                                                        else beforeParen ++ superscriptCount ++ ": {"
                                                 (functionInput,parseWarn) <- parsingInput w (nfunctuples (n + 1)) functionUpdater
                                                 setAttribute functionInput "name" (show (blankFuncTerms f))
                                                 setAttribute functionInput "rows" "1"
@@ -669,11 +687,18 @@ setField w opts fields (name,val) = do
 
 data FieldType = Domain | RelationSymbol | PropositionSymbol | ConstantSymbol | FunctionSymbol
 
+-- Modify the blankTerms function to include arity information for predicates
 blankTerms :: ModelingLanguage lex => FixLang lex (Form Bool) -> FixLang lex (Form Bool)
-blankTerms f = set termsOf (foVar "_") f
+blankTerms f = set termsOf (foVar "_") $ f
+
+-- Function that gives the arity of a predicate function
+-- arityPredInt :: Arity (Term Int) (Form Bool) ret -> Int
+-- arityPredInt (AZero :: Arity (Term Int) (Form Bool) ret) = 0
+-- arityPredInt (ASucc a) = 1 + arityPredInt a
+
 
 blankFuncTerms :: ModelingLanguage lex => FixLang lex (Term Int) -> FixLang lex (Term Int)
-blankFuncTerms f = set termsOf (foVar "_") f
+blankFuncTerms f = set termsOf (foVar "_") $ f
 
 parseInt :: Parsec String () Thing
 parseInt = Term . read <$> many1 digit
@@ -702,3 +727,20 @@ ntuples n = ntuple n `sepEndBy` (spaces *> char ',' <* spaces) <* eof
 
 nfunctuples :: Int -> Parsec String () [[Thing]]
 nfunctuples n = nfunctuple n `sepEndBy` (spaces *> char ',' <* spaces) <* eof
+
+-- Function to convert a digit to its superscript equivalent
+showSuperscript :: Int -> String
+showSuperscript n = concatMap superscriptDigit (show n)
+
+superscriptDigit :: Char -> String
+superscriptDigit '0' = "⁰"
+superscriptDigit '1' = "¹"
+superscriptDigit '2' = "²"
+superscriptDigit '3' = "³"
+superscriptDigit '4' = "⁴"
+superscriptDigit '5' = "⁵"
+superscriptDigit '6' = "⁶"
+superscriptDigit '7' = "⁷"
+superscriptDigit '8' = "⁸"
+superscriptDigit '9' = "⁹"
+superscriptDigit _   = Prelude.error "Unsupported digit in superscript"
