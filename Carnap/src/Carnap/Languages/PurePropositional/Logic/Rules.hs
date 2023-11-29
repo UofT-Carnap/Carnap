@@ -176,6 +176,11 @@ conjunctionDilemma = [ GammaV 1 :|-: SS (phin 1 .∨. phin 2)
                      , GammaV 2 :|-: SS ((phin 1 .→. phin 3) .∧. (phin 2 .→. phin 3))
                      ] ∴ GammaV 1 :+: GammaV 2 :|-: SS (phin 3)
 
+undecidedDilemma :: BooleanRule lex b
+undecidedDilemma = [ GammaV 1 :|-: SS (phin 1 .→. phin 3)
+                   , GammaV 2 :|-: SS (phin 2 .→. phin 3)
+                   ] ∴ GammaV 1 :+: GammaV 2 :|-: SS ((phin 1 .∨. phin 2) .→. (phin 3))
+
 hypotheticalSyllogism :: BooleanRule lex b
 hypotheticalSyllogism = [ GammaV 1 :|-: SS (phin 1 .→. phin 2)
                         , GammaV 2 :|-: SS (phin 2 .→. phin 3)

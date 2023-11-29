@@ -23,6 +23,8 @@ data KooSL = PR (Maybe [(ClassicalSequentOver PurePropLexicon (Sequent (Form Boo
                | MP  | MT  | DNE | DNI  | DD   | AS   
                | CP1 | CP2 | ID1 | ID2  | ID3  | ID4  | ID5  | ID6 | ID7 | ID8
                | ADJ | S1  | S2  | ADD1 | ADD2 | MTP1 | MTP2 | BC1 | BC2 | CB | R
+               | CDJ1 | CDJ2 | CDJ3 | CDJ4 | TR1 | TR2 | NC1 | NC2 | NB1 | NB2 | NB3 | NB4
+               | DM1 | DM2 | DM3 | DM4 | MC1 | MC2 | SC1 | SC2 | SC3
                | DER (ClassicalSequentOver PurePropLexicon (Sequent (Form Bool)))
                deriving (Eq)
 
@@ -56,6 +58,27 @@ instance Show KooSL where
     show R       = "R"
     show (PR _)  = "PR"
     show (DER _) = "Derived"
+    show CDJ1    = "CDJ"
+    show CDJ2    = "CDJ"
+    show CDJ3    = "CDJ"
+    show CDJ4    = "CDJ"
+    show TR1     = "TR"
+    show TR2     = "TR"
+    show NC1     = "NC"
+    show NC2     = "NC"
+    show NB1     = "NB"
+    show NB2     = "NB"
+    show NB3     = "NB"
+    show NB4     = "NB"
+    show DM1     = "DM"
+    show DM2     = "DM"
+    show DM3     = "DM"
+    show DM4     = "DM"
+    show MC1     = "MC"
+    show MC2     = "MC"
+    show SC1     = "SC"
+    show SC2     = "SC"
+    show SC3     = "SC"
 
 instance Inference KooSL PurePropLexicon (Form Bool) where
     ruleOf MP        = modusPonens
@@ -86,6 +109,27 @@ instance Inference KooSL PurePropLexicon (Form Bool) where
     ruleOf BC2       = biconditionalToConditionalVariations !! 1
     ruleOf CB        = conditionalToBiconditional
     ruleOf R         = identityRule
+    ruleOf CDJ1      = materialConditional !! 0
+    ruleOf CDJ2      = materialConditional !! 1
+    ruleOf CDJ3      = materialConditional !! 2
+    ruleOf CDJ4      = materialConditional !! 3
+    ruleOf TR1       = contraposition !! 0
+    ruleOf TR2       = contraposition !! 1
+    ruleOf NC1       = negatedConditional !! 0
+    ruleOf NC2       = negatedConditional !! 1
+    ruleOf NB1       = negatedBiconditional !! 0
+    ruleOf NB2       = negatedBiconditional !! 1
+    ruleOf NB3       = negatedBiconditional !! 2
+    ruleOf NB4       = negatedBiconditional !! 3
+    ruleOf DM1       = deMorgansLaws !! 0
+    ruleOf DM2       = deMorgansLaws !! 1
+    ruleOf DM3       = deMorgansLaws !! 2
+    ruleOf DM4       = deMorgansLaws !! 3
+    ruleOf MC1       = materialConditionalVariations !! 0
+    ruleOf MC2       = materialConditionalVariations !! 1
+    ruleOf SC1       = proofByCases
+    ruleOf SC2       = dilemma
+    ruleOf SC3       = undecidedDilemma
 
     premisesOf (DER r) = multiCutLeft r
     premisesOf r = upperSequents (ruleOf r)
@@ -101,7 +145,7 @@ instance Inference KooSL PurePropLexicon (Form Bool) where
         | otherwise = Nothing
 
 parseKooSL :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [KooSL]
-parseKooSL rtc = do r <- choice (map (try . string) ["AS","PR","MP","MTP","MT","DD","DNE","DNI", "DN", "S", "ADJ",  "ADD" , "BC", "CB",  "CD", "ID", "R", "D-"])
+parseKooSL rtc = do r <- choice (map (try . string) ["AS","PR","MP","MTP","MT","DD","DNE","DNI", "DN", "S", "ADJ",  "ADD" , "BC", "CB",  "CD", "ID", "R", "CDJ", "TR", "NC", "NB", "DM", "MC", "SC", "D-"])
                     case r of
                         "AS"   -> return [AS]
                         "PR"   -> return [PR (problemPremises rtc)]
@@ -120,6 +164,13 @@ parseKooSL rtc = do r <- choice (map (try . string) ["AS","PR","MP","MTP","MT","
                         "BC"   -> return [BC1, BC2]
                         "CB"   -> return [CB]
                         "R"    -> return [R]
+                        "CDJ"  -> return [CDJ1,CDJ2,CDJ3,CDJ4]
+                        "TR"   -> return [TR1, TR2]
+                        "NC"   -> return [NC1, NC2]
+                        "NB"   -> return [NB1, NB2, NB3, NB4]
+                        "DM"   -> return [DM1, DM2, DM3, DM4]
+                        "MC"   -> return [MC1, MC2]
+                        "SC"   -> return [SC1, SC2, SC3]
                         "D-" -> do  rn <- many1 upper
                                     case M.lookup rn (derivedRules rtc) of
                                         Just r  -> return [DER r]
