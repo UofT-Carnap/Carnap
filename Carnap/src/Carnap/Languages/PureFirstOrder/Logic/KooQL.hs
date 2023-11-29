@@ -74,10 +74,10 @@ instance Inference KooQL PureLexiconFOL (Form Bool) where
      ruleOf QN2       = quantifierNegation !! 1
      ruleOf QN3       = quantifierNegation !! 2
      ruleOf QN4       = quantifierNegation !! 3
-     ruleOf QN5       = quantifierNegationDouble !! 0
-     ruleOf QN6       = quantifierNegationDouble !! 1
-     ruleOf QN7       = quantifierNegationDouble !! 2
-     ruleOf QN8       = quantifierNegationDouble !! 3
+     ruleOf QN5       = quantifierDoubleNegationReplace !! 0
+     ruleOf QN6       = quantifierDoubleNegationReplace !! 1
+     ruleOf QN7       = quantifierDoubleNegationReplace !! 2
+     ruleOf QN8       = quantifierDoubleNegationReplace !! 3
      ruleOf LL1       = leibnizLawVariations !! 0
      ruleOf LL2       = leibnizLawVariations !! 1
      ruleOf ALL1      = antiLeibnizLawVariations !! 0

@@ -494,12 +494,6 @@ quantifierNegation = bidir ( GammaV 1 :|-: SS (lneg $ lall "v" (phi 1)))
                      ++ bidir ( GammaV 1 :|-: SS (lneg $ lsome "v" (phi 1)))
                               ( GammaV 1 :|-: SS (lall "v" (lneg . phi 1)))
 
-quantifierNegationDouble :: QuantModalRuleVariants lex (World -> Bool)
-quantifierNegationDouble = bidir ( GammaV 1 :|-: SS (lall "v" (phi 1)))
-                           ( GammaV 1 :|-: SS (lneg $ lsome "v" (lneg . phi 1)))
-                     ++ bidir ( GammaV 1 :|-: SS (lsome "v" (phi 1)))
-                              ( GammaV 1 :|-: SS (lneg $ lall "v" (lneg . phi 1)))
-
 modalNegation :: AbsoluteModalRuleVariants lex (World -> Bool)
 modalNegation = bidir ( GammaV 1 :|-: SS ((pos $ lneg $ phin 1)))
                 ( GammaV 1 :|-: SS ((lneg $ nec $ phin 1)))
