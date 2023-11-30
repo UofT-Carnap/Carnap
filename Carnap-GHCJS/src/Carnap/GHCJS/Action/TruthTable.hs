@@ -16,6 +16,7 @@ import Carnap.Languages.PurePropositional.Logic (PropSequentCalc)
 import Carnap.Languages.Util.LanguageClasses
 import GHCJS.DOM.Types
 import GHCJS.DOM.Element
+import GHCJS.DOM.NodeList
 import GHCJS.DOM.HTMLSelectElement (castToHTMLSelectElement, getValue, setSelectedIndex) 
 import GHCJS.DOM.Window (alert, prompt)
 import GHCJS.DOM.Document (createElement, getDefaultView)
@@ -286,9 +287,13 @@ toRow w opts atomIndicies orderedChildren gridRef (v,n,mvalid,given,n2) =
         do Just row <- createElement w (Just "tr")
            Just sep <- createElement w (Just "td")
            Just sep2 <- createElement w (Just "td")
+           setAttribute row "highlightRow" "false"
            setAttribute sep "class" "tttdSep"
            setAttribute sep2 "class" "tttdSep"
            Just rownum <- createElement w (Just "td")
+           setAttribute rownum "class" "rowNumber"
+           onClickHighlightRow <- newListener $ toggleRowHighlight row
+           addListener rownum click onClickHighlightRow False
            setInnerHTML rownum (Just $ show n2)
            appendChild row (Just rownum)
            appendChild row (Just sep2)
@@ -342,6 +347,14 @@ toRow w opts atomIndicies orderedChildren gridRef (v,n,mvalid,given,n2) =
                                  Just True -> liftIO $ modifyIORef gridRef (M.insert (m,n) (tv, Just True))
                                  Just False -> liftIO $ modifyIORef gridRef (M.insert (m,n) (not tv, Just False))
                                  Nothing -> liftIO $ modifyIORef gridRef (M.insert (m,n) (False, Nothing))
+          toggleRowHighlight :: Element -> EventM Element MouseEvent ()
+          toggleRowHighlight trElement = do
+                                       isRowHighlighted <- getAttribute trElement "highlightRow"
+                                       case isRowHighlighted of
+                                            Just "true" -> liftIO $ setAttribute trElement "highlightRow" "false"
+                                            Just "false" -> liftIO $ setAttribute trElement "highlightRow" "true"
+                                            Nothing -> liftIO $ setAttribute trElement "highlightRow" "false"
+
 
 ----------------------------
 --  Partial Truth Tables  --

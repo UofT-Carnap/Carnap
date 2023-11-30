@@ -529,6 +529,10 @@ body[data-carnap-type="proofchecker"] .buttonWrapper {
     text-align:center;
 }
 
+[data-carnap-type="truthtable"] tr[highlightRow="true"] {
+    background-color: yellow;
+}
+
 [data-carnap-type="treedeductionchecker"] .jsonDisplay,
 [data-carnap-type="sequentchecker"] .jsonDisplay {
     border: 1px dashed;
