@@ -10,7 +10,7 @@ module Lib ( genericSendJSON, sendJSON, onEnter, onKey, doOnce, dispatchCustom, 
            , toCleanVal, popUpWith, spinnerSVG, doneButton, questionButton
            , exclaimButton, expandButton, createSubmitButton, createButtonWrapper, createButtonWrapperConst
            , createSymbolsPane, getShowSymbolsButton, createSymbolButton, insertSymbolClick
-           , maybeNodeListToList, trySubmit, inOpts, rewriteWith, setStatus, setSuccess, setFailure
+           , maybeNodeListToList, maybeHtmlCollectionToList, trySubmit, inOpts, rewriteWith, setStatus, setSuccess, setFailure
            , ButtonStatus(..) , keyString) where
 
 import Data.Aeson
@@ -603,6 +603,11 @@ foreign import javascript unsafe "Carnap[$1]=$2;" initializeCallbackJS :: JSStri
 --TODO: unify with other callback code in SequentCheck
 
 foreign import javascript unsafe "$1($2);" simpleCall :: JSVal -> JSVal -> IO ()
+
+-- foreign import javascript unsafe "$1.closest('table')" js_closestTable :: Element -> IO (Maybe JSVal)
+
+-- closestTable :: (Maybe JSVal) -> (Maybe Element)
+-- closestTable maybeTable = fromJSVAl maybeTable
 
 submissionSource = do qr <- submissionQueryJS
                       case fromJSString qr of

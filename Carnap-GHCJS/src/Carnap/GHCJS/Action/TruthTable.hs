@@ -17,7 +17,10 @@ import Carnap.Languages.Util.LanguageClasses
 import GHCJS.DOM.Types
 import GHCJS.DOM.Element
 import GHCJS.DOM.NodeList
-import GHCJS.DOM.HTMLSelectElement (castToHTMLSelectElement, getValue, setSelectedIndex) 
+import GHCJS.DOM.HTMLTableElement (getRows, castToHTMLTableElement)
+import GHCJS.DOM.HTMLTableRowElement (getCells, castToHTMLTableRowElement)
+import GHCJS.DOM.HTMLTableCellElement (getCellIndex, castToHTMLTableCellElement)
+import GHCJS.DOM.HTMLSelectElement (castToHTMLSelectElement, getValue, setSelectedIndex)
 import GHCJS.DOM.Window (alert, prompt)
 import GHCJS.DOM.Document (createElement, getDefaultView)
 import GHCJS.DOM.Node (appendChild, getParentNode, getParentElement, insertBefore)
@@ -530,13 +533,43 @@ toHead w opts atomIndicies orderedChildren =
 toChildTh :: (Schematizable (f (FixLang f)), CopulaSchema (FixLang f)) => Document -> Either Char (FixLang f a) -> IO Element
 toChildTh w c = 
         do Just th <- createElement w (Just "th")
+           onClickHighlightCol <- newListener $ eventListenerWrapper (castToHTMLTableCellElement th)
+           addListener th click onClickHighlightCol False
            case c of
                Left c'  -> do if c' `elem` ['⊢','⊨','⊭'] 
-                                  then setAttribute th "class" "ttTurstile" 
+                                  then do setAttribute th "class" "ttTurstile" 
+                                          setAttribute th "clickableTableHeader" "true"
                                   else return ()
                               setInnerHTML th (Just [c'])
-               Right f  -> setInnerHTML th (Just $ mcOf f)
+               Right f  -> do setInnerHTML th (Just $ mcOf f)
+                              setAttribute th "clickableTableHeader" "true"
            return th
+        where
+            eventListenerWrapper:: HTMLTableCellElement -> EventM Element MouseEvent ()
+            eventListenerWrapper headerElement = liftIO $ do table <- closest headerElement "table"
+                                                             let tableElement = case table of
+                                                                Just table -> table
+                                                                Nothing -> Prelude.error "no table"
+                                                             columnIndex <- getCellIndex headerElement
+                                                             toggleColHighlight tableElement columnIndex
+            toggleColHighlight:: Element -> Int -> IO ()
+            toggleColHighlight tableElement indexToToggle = do table <- castToHTMLTableElement tableElement
+                                                               allRows <- maybeHtmlCollectionToList (getRows tableElement)
+                                                               liftIO $ (mapM_ toggleCellHighlight allRows) indexToToggle
+            toggleCellHighlight :: Element -> Int -> IO ()
+            toggleCellHighlight cellElement indexToToggle = do isCellHighlighted <- getAttribute cellElement "highlightCell"
+                                                               cellIndex <- getCellIndex (castToHTMLTableCellElement cellElement)
+                                                               case isCellHighlighted of
+                                                                   Just "true" -> if cellIndex == indexToToggle 
+                                                                               then liftIO $ setAttribute cellElement "highlightCell" "false"
+                                                                               else return ()
+                                                                   Just "false" -> if cellIndex == indexToToggle 
+                                                                               then liftIO $ setAttribute cellElement "highlightCell" "true"
+                                                                               else return ()
+                                                                   Nothing -> if cellIndex == indexToToggle
+                                                                               then liftIO $ setAttribute cellElement "highlightCell" "true"
+                                                                               else return ()
+
 
 -----------
 --  BPT  --
