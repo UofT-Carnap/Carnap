@@ -598,6 +598,15 @@ negatedConditionalVariations = [
                 ] ∴ GammaV 1 :|-: SS (lneg $ phin 1 .→. phin 2)
             ]
 
+transpositionVariations :: BooleanRuleVariants lex b
+transpositionVariations = [
+                [ GammaV 1 :|-: SS (phin 1 .→. phin 2)
+                ] ∴ GammaV 1 :|-: SS ((lneg (phin 2)) .→. lneg (phin 1))
+            ,
+                [ GammaV 1 :|-: SS ((lneg (phin 2)) .→. lneg (phin 1))
+                ] ∴ GammaV 1 :|-: SS (phin 1 .→. phin 2)
+            ]
+
 negatedConjunctionVariations :: BooleanRuleVariants lex b
 negatedConjunctionVariations = [
                 [ GammaV 1 :|-: SS (lneg $ phin 1 .∧. phin 2)
@@ -623,6 +632,12 @@ negatedBiconditionalVariations = [
             ,
                 [ GammaV 1 :|-: SS (lneg (phin 1) .↔. phin 2)
                 ] ∴ GammaV 1 :|-: SS (lneg $ phin 1 .↔. phin 2)
+            ,
+                [ GammaV 1 :|-: SS (lneg $ phin 1 .↔. phin 2)
+                ] ∴ GammaV 1 :|-: SS (phin 1 .↔. lneg (phin 2))
+            ,
+                [ GammaV 1 :|-: SS (phin 1 .↔. lneg (phin 2))
+                ] ∴ GammaV 1 :|-: SS (lneg $ phin 1 .↔. phin 2)
             ]
 
 deMorgansNegatedOr :: BooleanRuleVariants lex b
@@ -632,6 +647,48 @@ deMorgansNegatedOr = [
             ,
                 [ GammaV 1 :|-: SS (lneg (phin 1) .∧. lneg (phin 2))
                 ] ∴ GammaV 1 :|-: SS (lneg $ phin 1 .∨. phin 2)
+            ]
+
+conditionalDisjuctionVariations :: BooleanRuleVariants lex b
+conditionalDisjuctionVariations = [
+                [ GammaV 1 :|-: SS (phin 1 .→. phin 2)
+                ] ∴ GammaV 1 :|-: SS (lneg (phin 1) .∨. phin 2)
+            ,
+                [ GammaV 1 :|-: SS (lneg (phin 1) .∨. phin 2)
+                ] ∴ GammaV 1 :|-: SS (phin 1 .→. phin 2)
+            ,
+                [ GammaV 1 :|-: SS (lneg (phin 1) .→. phin 2)
+                ] ∴ GammaV 1 :|-: SS (phin 1 .∨. phin 2)
+            ,
+                [ GammaV 1 :|-: SS (phin 1 .∨. phin 2)
+                ] ∴ GammaV 1 :|-: SS (lneg (phin 1) .→. phin 2)
+            ]
+            
+deMorgansVariations :: BooleanRuleVariants lex b
+deMorgansVariations = [
+                [ GammaV 1 :|-: SS (lneg $ phin 1 .∨. phin 2)
+                ] ∴ GammaV 1 :|-: SS (lneg (phin 1) .∧. lneg (phin 2))
+            ,
+                [ GammaV 1 :|-: SS (lneg (phin 1) .∧. lneg (phin 2))
+                ] ∴ GammaV 1 :|-: SS (lneg $ phin 1 .∨. phin 2)
+            , 
+                [ GammaV 1 :|-: SS (lneg $ phin 1 .∧. phin 2)
+                ] ∴ GammaV 1 :|-: SS (lneg (phin 1) .∨. lneg (phin 2))
+            , 
+                [ GammaV 1 :|-: SS (lneg (phin 1) .∨. lneg (phin 2))
+                ] ∴ GammaV 1 :|-: SS (lneg $ phin 1 .∧. phin 2)
+            ,   
+                [ GammaV 1 :|-: SS (phin 1 .∧. phin 2)
+                ] ∴ GammaV 1 :|-: SS (lneg $ lneg (phin 1) .∨. lneg (phin 2))
+            , 
+                [ GammaV 1 :|-: SS (lneg $ lneg (phin 1) .∨. lneg (phin 2))
+                ] ∴ GammaV 1 :|-: SS (phin 1 .∧. phin 2)
+            ,   
+                [ GammaV 1 :|-: SS (phin 1 .∨. phin 2)
+                ] ∴ GammaV 1 :|-: SS (lneg $ lneg (phin 1) .∧. lneg (phin 2))
+            ,
+                [ GammaV 1 :|-: SS (lneg $ lneg (phin 1) .∧. lneg (phin 2))
+                ] ∴ GammaV 1 :|-: SS (phin 1 .∨. phin 2)
             ]
 
 conjunctiveSyllogismVariations :: BooleanRuleVariants lex b

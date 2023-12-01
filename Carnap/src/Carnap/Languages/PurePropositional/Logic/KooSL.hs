@@ -24,7 +24,7 @@ data KooSL = PR (Maybe [(ClassicalSequentOver PurePropLexicon (Sequent (Form Boo
                | CP1 | CP2 | ID1 | ID2  | ID3  | ID4  | ID5  | ID6 | ID7 | ID8
                | ADJ | S1  | S2  | ADD1 | ADD2 | MTP1 | MTP2 | BC1 | BC2 | CB | R
                | CDJ1 | CDJ2 | CDJ3 | CDJ4 | TR1 | TR2 | NC1 | NC2 | NB1 | NB2 | NB3 | NB4
-               | DM1 | DM2 | DM3 | DM4 | MC1 | MC2 | SC1 | SC2 | SC3
+               | DM1 | DM2 | DM3 | DM4 | DM5 | DM6 | DM7 | DM8 | MC1 | MC2 | SC1 | SC2 | SC3
                | DER (ClassicalSequentOver PurePropLexicon (Sequent (Form Bool)))
                deriving (Eq)
 
@@ -74,6 +74,10 @@ instance Show KooSL where
     show DM2     = "DM"
     show DM3     = "DM"
     show DM4     = "DM"
+    show DM5     = "DM"
+    show DM6     = "DM"
+    show DM7     = "DM"
+    show DM8     = "DM"
     show MC1     = "MC"
     show MC2     = "MC"
     show SC1     = "SC"
@@ -109,22 +113,26 @@ instance Inference KooSL PurePropLexicon (Form Bool) where
     ruleOf BC2       = biconditionalToConditionalVariations !! 1
     ruleOf CB        = conditionalToBiconditional
     ruleOf R         = identityRule
-    ruleOf CDJ1      = materialConditional !! 0
-    ruleOf CDJ2      = materialConditional !! 1
-    ruleOf CDJ3      = materialConditional !! 2
-    ruleOf CDJ4      = materialConditional !! 3
-    ruleOf TR1       = contraposition !! 0
-    ruleOf TR2       = contraposition !! 1
-    ruleOf NC1       = negatedConditional !! 0
-    ruleOf NC2       = negatedConditional !! 1
-    ruleOf NB1       = negatedBiconditional !! 0
-    ruleOf NB2       = negatedBiconditional !! 1
-    ruleOf NB3       = negatedBiconditional !! 2
-    ruleOf NB4       = negatedBiconditional !! 3
-    ruleOf DM1       = deMorgansLaws !! 0
-    ruleOf DM2       = deMorgansLaws !! 1
-    ruleOf DM3       = deMorgansLaws !! 2
-    ruleOf DM4       = deMorgansLaws !! 3
+    ruleOf CDJ1      = conditionalDisjuctionVariations !! 0
+    ruleOf CDJ2      = conditionalDisjuctionVariations !! 1
+    ruleOf CDJ3      = conditionalDisjuctionVariations !! 2
+    ruleOf CDJ4      = conditionalDisjuctionVariations !! 3
+    ruleOf TR1       = transpositionVariations !! 0
+    ruleOf TR2       = transpositionVariations !! 1
+    ruleOf NC1       = negatedConditionalVariations !! 0
+    ruleOf NC2       = negatedConditionalVariations !! 1
+    ruleOf NB1       = negatedBiconditionalVariations !! 0
+    ruleOf NB2       = negatedBiconditionalVariations !! 1
+    ruleOf NB3       = negatedBiconditionalVariations !! 2
+    ruleOf NB4       = negatedBiconditionalVariations !! 3
+    ruleOf DM1       = deMorgansVariations !! 0
+    ruleOf DM2       = deMorgansVariations !! 1
+    ruleOf DM3       = deMorgansVariations !! 2
+    ruleOf DM4       = deMorgansVariations !! 3
+    ruleOf DM5       = deMorgansVariations !! 4
+    ruleOf DM6       = deMorgansVariations !! 5
+    ruleOf DM7       = deMorgansVariations !! 6
+    ruleOf DM8       = deMorgansVariations !! 7
     ruleOf MC1       = materialConditionalVariations !! 0
     ruleOf MC2       = materialConditionalVariations !! 1
     ruleOf SC1       = proofByCases
@@ -145,7 +153,7 @@ instance Inference KooSL PurePropLexicon (Form Bool) where
         | otherwise = Nothing
 
 parseKooSL :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [KooSL]
-parseKooSL rtc = do r <- choice (map (try . string) ["AS","PR","MP","MTP","MT","DD","DNE","DNI", "DN", "S", "ADJ",  "ADD" , "BC", "CB",  "CD", "ID", "R", "CDJ", "TR", "NC", "NB", "DM", "MC", "SC", "D-"])
+parseKooSL rtc = do r <- choice (map (try . string) ["AS","PR","MP","MTP","MT","DD","DNE","DNI", "DN", "SC", "S", "ADJ",  "ADD" , "BC", "CB", "CDJ", "CD", "ID", "R", "TR", "NC", "NB", "DM", "MC", "D-"])
                     case r of
                         "AS"   -> return [AS]
                         "PR"   -> return [PR (problemPremises rtc)]
@@ -168,7 +176,7 @@ parseKooSL rtc = do r <- choice (map (try . string) ["AS","PR","MP","MTP","MT","
                         "TR"   -> return [TR1, TR2]
                         "NC"   -> return [NC1, NC2]
                         "NB"   -> return [NB1, NB2, NB3, NB4]
-                        "DM"   -> return [DM1, DM2, DM3, DM4]
+                        "DM"   -> return [DM1, DM2, DM3, DM4, DM5, DM6, DM7, DM8]
                         "MC"   -> return [MC1, MC2]
                         "SC"   -> return [SC1, SC2, SC3]
                         "D-" -> do  rn <- many1 upper
