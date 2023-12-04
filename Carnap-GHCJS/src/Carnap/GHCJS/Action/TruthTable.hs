@@ -27,6 +27,7 @@ import GHCJS.DOM.Node (appendChild, getParentNode, getParentElement, insertBefor
 import GHCJS.DOM.EventM (newListener, addListener, EventM, target)
 import Data.IORef (newIORef, IORef, readIORef,writeIORef, modifyIORef)
 import Data.Map as M (Map, lookup, foldr, insert, fromList, toList)
+import Data.Maybe (catMaybes)
 import Data.Text (pack)
 import Data.Either (rights)
 import Data.List (sort, sortOn, subsequences, intercalate, nub, zip4, zip5, intersperse)
@@ -546,29 +547,44 @@ toChildTh w c =
            return th
         where
             eventListenerWrapper:: HTMLTableCellElement -> EventM Element MouseEvent ()
-            eventListenerWrapper headerElement = liftIO $ do table <- closest headerElement "table"
-                                                             let tableElement = case table of
-                                                                Just table -> table
-                                                                Nothing -> Prelude.error "no table"
-                                                             columnIndex <- getCellIndex headerElement
-                                                             toggleColHighlight tableElement columnIndex
-            toggleColHighlight:: Element -> Int -> IO ()
-            toggleColHighlight tableElement indexToToggle = do table <- castToHTMLTableElement tableElement
-                                                               allRows <- maybeHtmlCollectionToList (getRows tableElement)
-                                                               liftIO $ (mapM_ toggleCellHighlight allRows) indexToToggle
-            toggleCellHighlight :: Element -> Int -> IO ()
-            toggleCellHighlight cellElement indexToToggle = do isCellHighlighted <- getAttribute cellElement "highlightCell"
-                                                               cellIndex <- getCellIndex (castToHTMLTableCellElement cellElement)
-                                                               case isCellHighlighted of
-                                                                   Just "true" -> if cellIndex == indexToToggle 
-                                                                               then liftIO $ setAttribute cellElement "highlightCell" "false"
-                                                                               else return ()
-                                                                   Just "false" -> if cellIndex == indexToToggle 
-                                                                               then liftIO $ setAttribute cellElement "highlightCell" "true"
-                                                                               else return ()
-                                                                   Nothing -> if cellIndex == indexToToggle
-                                                                               then liftIO $ setAttribute cellElement "highlightCell" "true"
-                                                                               else return ()
+            eventListenerWrapper headerElement = do
+                columnIndex <- getCellIndex headerElement
+                maybeTable <- closest headerElement "table"
+                table <- case maybeTable of
+                        Just t -> return t
+                        Nothing -> Prelude.error "no table"
+                let tableElement = castToHTMLTableElement table
+                rows <- getRows tableElement
+                maybeRows <- maybeHtmlCollectionToList rows
+                let rowCollection = catMaybes maybeRows
+                indexToToggle <- getCellIndex headerElement
+                liftIO $ setAttribute tableElement "isTable" "true"
+                isClickableHeader <- getAttribute headerElement "clickableTableHeader"
+                case isClickableHeader of
+                    Just "true" -> liftIO $ processRows rowCollection indexToToggle
+                    _ -> return ()
+            processRows:: [Element] -> Int -> IO ()
+            processRows (x:xs) indexToToggle = do
+                let rowElement = castToHTMLTableRowElement x
+                maybeCells <- getCells rowElement
+                allCells <- maybeHtmlCollectionToList maybeCells
+                let cells = catMaybes allCells
+                liftIO $ toggleCells cells indexToToggle
+                liftIO $ processRows xs indexToToggle
+            toggleCells:: [Element] -> Int -> IO ()
+            toggleCells (x:xs) indexToToggle = do
+                let currCell = castToHTMLTableCellElement x
+                currIndex <- getCellIndex currCell
+                isHighlighted <- getAttribute currCell "highlightCell"
+                if indexToToggle == currIndex then do
+                    case isHighlighted of
+                        Just "true" -> liftIO $ setAttribute currCell "highlightCell" "false"
+                        Just "false" -> liftIO $ setAttribute currCell "highlightCell" "true"
+                        Nothing -> liftIO $ setAttribute currCell "highlightCell" "true"
+                        _ -> liftIO $ setAttribute currCell "highlightCell" "true"
+                else return ()
+                liftIO $ toggleCells xs indexToToggle
+            toggleCells [] _ = return ()
 
 
 -----------
