@@ -1,112 +1,112 @@
 .exercise {
-	display:inline-block;
-	position:relative;
-	padding:10pt;
-	padding-top:15pt;
-	margin:10pt 10pt 0pt 0pt;
-	min-width:100%;
-	border: solid 1pt #dddddd;
+    display:inline-block;
+    position:relative;
+    padding:10pt;
+    padding-top:15pt;
+    margin:10pt 10pt 0pt 0pt;
+    min-width:100%;
+    border: solid 1pt #dddddd;
 }
 
 .exercise * { box-sizing: border-box; }
 
 .exercise > span:nth-child(1), .exercise > span:nth-child(2) {
-	position: absolute;
-	color: #aaaaaa;
-	top:-13px;
-	background-color: #fffff8;
-	padding:5px;
-	font-size:15px;
+    position: absolute;
+    color: #aaaaaa;
+    top:-13px;
+    background-color: #fffff8;
+    padding:5px;
+    font-size:15px;
 }
 
 .exercise > span:nth-child(2) { right:10pt;}
 
 .buttonWrapper button {
-	height:2em;
-	margin:0px;
-	position:relative;
-	color:white;
-	font-weight:bold;
-	font-size:14px;
-	padding-bottom:5px;
+    height:2em;
+    margin:0px;
+    position:relative;
+    color:white;
+    font-weight:bold;
+    font-size:14px;
+    padding-bottom:5px;
 }
 
 .buttonWrapper button:nth-child(1) {
-	background: #557386;
-	border:1px solid #557386;
+    background: #557386;
+    border:1px solid #557386;
 }
 
 .buttonWrapper button:nth-child(2) {
-	background: #7B909E;
-	border:1px solid #7B909E;
+    background: #7B909E;
+    border:1px solid #7B909E;
 }
 
 .buttonWrapper button:nth-child(3) {
-	background: #A9B7C0;
-	border:1px solid #A9B7C0;
+    background: #A9B7C0;
+    border:1px solid #A9B7C0;
 }
 
 .buttonWrapper button:nth-child(4) {
-	background: #D6DCE0;
-	border:1px solid #D6DCE0;
-	color:black;
+    background: #D6DCE0;
+    border:1px solid #D6DCE0;
+    color:black;
 }
 
 .buttonWrapper button svg {
-	position:relative;
-	top:3px;
-	width:16px;
-	margin-left:7px;
+    position:relative;
+    top:3px;
+    width:16px;
+    margin-left:7px;
 }
 
 .buttonWrapper button svg {
-	fill:white;
-	stroke:white;
+    fill:white;
+    stroke:white;
 }
 
 .buttonWrapper button:hover,
 .buttonWrapper button[data-carnap-exercise-status="submitted"]
 {
-	animation: buttonHover .2s 1;
-	background:white;
-	color:#A9B7C0;
-	border:1px solid #A9B7C0;
+    animation: buttonHover .2s 1;
+    background:white;
+    color:#A9B7C0;
+    border:1px solid #A9B7C0;
 }
 
 .buttonWrapper button:hover svg,
 .buttonWrapper button[data-carnap-exercise-status="submitted"] svg
 {
-	animation: buttonHover .2s 1;
-	fill:#A9B7C0;
+    animation: buttonHover .2s 1;
+    fill:#A9B7C0;
 }
 
 .buttonWrapper button:hover svg .filler {
-	animation: buttonHover .2s 1;
-	fill:white;
-	stroke:white;
+    animation: buttonHover .2s 1;
+    fill:white;
+    stroke:white;
 }
 
 .buttonWrapper button:active svg .filler,
 .buttonWrapper button[data-carnap-exercise-status="submitted"] svg .filler {
-	fill:#A9B7C0;
-	stroke:#A9B7C0;
+    fill:#A9B7C0;
+    stroke:#A9B7C0;
 }
 
 .buttonWrapperConst button:nth-child(n) {
-	background: #D6DCE0;
-	border:1px solid #D6DCE0;
-	color:black;
+    background: #D6DCE0;
+    border:1px solid #D6DCE0;
+    color:black;
 }
 
 @keyframes buttonHover {
-	0% {
-		background:#a9b7c0;
-		color:white;
-	}
-	100% {
-		background:white;
-		color:#A9B7C0;
-	}
+    0% {
+        background:#a9b7c0;
+        color:white;
+    }
+    100% {
+        background:white;
+        color:#A9B7C0;
+    }
 }
 
 /* FIXME this need to be narrower, and to wrap, for mobile. */
@@ -117,14 +117,14 @@
 
 [data-carnap-type="synchecker"] > .buttonWrapper,
 [data-carnap-type="translate"] > .buttonWrapper {
-	display:inline-block;
+    display:inline-block;
 }
 
 [data-carnap-type="synchecker"] > .buttonWrapper button,
 [data-carnap-type="translate"] > .buttonWrapper button {
-	display:inline-block;
-	border-left:none;
-	bottom:0px;
+    display:inline-block;
+    border-left:none;
+    bottom:0px;
 }
 
 [data-carnap-type="truthtable"] > .input,
@@ -132,27 +132,27 @@
 [data-carnap-type="qualitative"] > .input,
 [data-carnap-type="sequentchecker"] > .input,
 [data-carnap-type="treedeductionchecker"] > .input {
-	font-size:14pt;
-	padding:5px;
-	background:white;
-	border:1px solid #A9B7C0;
-	outline:none;
-	margin:0px;
+    font-size:14pt;
+    padding:5px;
+    background:white;
+    border:1px solid #A9B7C0;
+    outline:none;
+    margin:0px;
 }
 
 [data-carnap-type="synchecker"] > input,
 [data-carnap-type="translate"] > input {
-	font-size:14px;
-	min-height:2em;
-	padding:5px;
-	background:white;
-	border:1px solid #A9B7C0;
-	outline:none;
-	margin:0px;
+    font-size:14px;
+    min-height:2em;
+    padding:5px;
+    background:white;
+    border:1px solid #A9B7C0;
+    outline:none;
+    margin:0px;
 }
 
 [data-carnap-type="translate"] > input { 
-	width:400px;
+    width:400px;
 }
 
 [data-carnap-type="translate"] .output,
@@ -161,82 +161,82 @@
 [data-carnap-type="sequentchecker"] .output,
 [data-carnap-type="treedeductionchecker"] .output,
 [data-carnap-type="qualitative"] .output { 
-	position:relative;
-	border:1px solid #A9B7C0;
-	padding:10px;
-	font-size:14pt;
-	top:-1px;
+    position:relative;
+    border:1px solid #A9B7C0;
+    padding:10px;
+    font-size:14pt;
+    top:-1px;
 }
 
 [data-carnap-type="synchecker"] .tree {
-	background:white;
-	display:inline-block;
-	position:relative;
-	top:-1px;
-	min-width:289px;
-	padding:10pt;
-	border:1px solid #A9B7C0;
-	box-sizing:content-box;
-	-webkit-box-sizing:content-box;
+    background:white;
+    display:inline-block;
+    position:relative;
+    top:-1px;
+    min-width:289px;
+    padding:10pt;
+    border:1px solid #A9B7C0;
+    box-sizing:content-box;
+    -webkit-box-sizing:content-box;
 
 }
 
 /* This is what will need to be the locus of responsive resizing */
 [data-carnap-type="proofchecker"] {
-	display:inline-block;
-	vertical-align:top;
-	position: relative;
-	width:500px;
-	min-height:110pt;
-	margin-bottom:50pt;
-	line-height:1.2em;
-	font-size:10pt;
+    display:inline-block;
+    vertical-align:top;
+    position: relative;
+    width:500px;
+    min-height:110pt;
+    margin-bottom:50pt;
+    line-height:1.2em;
+    font-size:10pt;
 }
 
 .numbering {
-	display:inline-block;
-	white-space:pre;
+    display:inline-block;
+    white-space:pre;
 }
 
 /* probably need a subordinate div containing this and the feedback to fix the :hover issue on iOS*/
 [data-carnap-type="proofchecker"] textarea {
-	position: relative;
-	overflow-clip-box: padding-box;
-	width: 100%;
-	height: 100%;
-	font-size:10pt;
-	padding:20px;
-	min-height:150px;
-	padding-left:40pt;
-	padding-right:30pt;
-	font-family: monospace;
-	line-height:1.2em;
-	resize: vertical;
-	white-space:pre;
-	overflow-wrap:normal;
-	word-wrap:normal;
-	border:1px solid #A9B7C0;
-	outline:none;
-	z-index:1;
+    position: relative;
+    overflow-clip-box: padding-box;
+    width: 100%;
+    height: 100%;
+    font-size:10pt;
+    padding:20px;
+    min-height:150px;
+    padding-left:40pt;
+    padding-right:30pt;
+    font-family: monospace;
+    line-height:1.2em;
+    resize: vertical;
+    white-space:pre;
+    overflow-wrap:normal;
+    word-wrap:normal;
+    border:1px solid #A9B7C0;
+    outline:none;
+    z-index:1;
 }
 
 [data-carnap-type="proofchecker"] textarea:focus {
-	border:1px solid black;
+    border:1px solid black;
 }
 
 [data-carnap-type="proofchecker"] .output{
-	box-sizing:border-box;
-	position: absolute;
-	top:0px;
-	bottom:5px;
-	z-index:2;
-	width:100%;
-	padding:21px;
-	padding-left:11px;
-	pointer-events: none;
-	font-family: monospace;
-	font-size:10pt;
-	overflow:hidden;
+    box-sizing:border-box;
+    position: absolute;
+    top:0px;
+    bottom:5px;
+    z-index:2;
+    width:100%;
+    padding:21px;
+    padding-left:11px;
+    pointer-events: none;
+    font-family: monospace;
+    font-size:10pt;
+    overflow:hidden;
 }
 
 [data-carnap-type="proofchecker"]:not([data-carnap-options~="resize"]) .buttonWrapper{ top:-5px; }
@@ -248,163 +248,163 @@
 [data-carnap-type="proofchecker"]:not([data-carnap-options~="resize"]) { margin-bottom:0px; }
 
 .proofFeedback {
-	font-size:10pt;
-	position:absolute;
-	right:10px;
-	top:13pt;
-	width:20px;
-	pointer-events: auto;
+    font-size:10pt;
+    position:absolute;
+    right:10px;
+    top:13pt;
+    width:20px;
+    pointer-events: auto;
 }
 
 /* the div containing the feedback mark */
 .proofFeedback li > div {
-	width:10px;
+    width:10px;
 }
 
 
 /* The div containing feedback */
 
 .manualPopper {
-	position:absolute;
-	right:40px;
-	bottom:20px;
-	z-index:10;
+    position:absolute;
+    right:40px;
+    bottom:20px;
+    z-index:10;
 }
 
 .popper {
-	font-size:8pt;
-	background:white;
-	width:200pt;
-	border:1pt solid black;
-	padding:5pt;
-	color:black;
+    font-size:8pt;
+    background:white;
+    width:200pt;
+    border:1pt solid black;
+    padding:5pt;
+    color:black;
 }
 
 .popperWrapper {
-	z-index:10;
+    z-index:10;
 }
 
 .details {
-	padding-top:5px;
-	margin-top:5px;
-	border-top:1px dashed gray;
+    padding-top:5px;
+    margin-top:5px;
+    border-top:1px dashed gray;
 }
 
 .equations {
-	padding:5px;
-	margin:5px;
-	border:1px solid gray;
+    padding:5px;
+    margin:5px;
+    border:1px solid gray;
 }
 
 .proofFeedback ul {
-	list-style-type:none;
-	padding:0pt;
-	margin:0pt;
+    list-style-type:none;
+    padding:0pt;
+    margin:0pt;
 }
 
 .proofFeedback li {
-	padding:0pt;
-	font-family: monospace;
-	font-size:10pt;
-	line-height:1.2em;
+    padding:0pt;
+    font-family: monospace;
+    font-size:10pt;
+    line-height:1.2em;
 }
 
 .proofDisplay {
-	display:inline-block;
-	z-index:-1;
-	vertical-align:top;
-	padding-left:60px;
-	position:relative;
-	min-width:240pt;
-	padding-bottom:5pt;
-	overflow:auto;
-	max-height:100%
+    display:inline-block;
+    z-index:-1;
+    vertical-align:top;
+    padding-left:60px;
+    position:relative;
+    min-width:240pt;
+    padding-bottom:5pt;
+    overflow:auto;
+    max-height:100%
 }
 
 .proofDisplay .subproof {
-	border-left:1px solid black;
+    border-left:1px solid black;
 }
 
 .proofDisplay .subproof .subproof {
-	margin-left: 5pt;
+    margin-left: 5pt;
 }
 
 .proofDisplay .subproof div > span:nth-child(2){
-	padding-left: 5pt;
+    padding-left: 5pt;
 }
 
 .montagueDisplay span.rule, .fitchDisplay span.rule, .lemmonDisplay span.rule{
-	float:right;
-	padding-left:30px;
+    float:right;
+    padding-left:30px;
 }
 
 .montagueDisplay span.form, .fitchDisplay span.form, .lemmonDisplay span.form{
-	white-space:pre;
+    white-space:pre;
 }
 
 .montagueDisplay div > span:first-child, .fitchDisplay div > span:first-child {
-	position:absolute;
-	left:20pt;
-	font-size:15px;
+    position:absolute;
+    left:20pt;
+    font-size:15px;
 }
 
 .montagueDisplay .qed div > span:nth-child(2) {
-	padding-left:5px;
+    padding-left:5px;
 }
 
 .montagueDisplay .qed div {
-	border-left:1px solid black;
-	border-bottom:1px solid black;
-	height:25px;
+    border-left:1px solid black;
+    border-bottom:1px solid black;
+    height:25px;
 }
 
 .montagueDisplay .subproof > div.qed {
-	padding-left: 5pt;
+    padding-left: 5pt;
 }
 
 .montagueDisplay .show-cross {
-	text-decoration: line-through;
+    text-decoration: line-through;
 }
 
 .fitchDisplay .subproof {
-	margin-top:5px;
-	margin-left:5pt;
+    margin-top:5px;
+    margin-left:5pt;
 }
 
 .fitchDisplay {
-	border-left:1px solid black;
+    border-left:1px solid black;
 }
 
 .fitchDisplay > .assertion, .fitchDisplay > .final-premise {
-	padding-left: 5pt;
+    padding-left: 5pt;
 }
 
 .fitchDisplay .subproof > div:first-child, .fitchDisplay > .final-premise {
-	border-bottom:1px solid black;
+    border-bottom:1px solid black;
 }
 
 .lemmonDisplay div > span:nth-child(1) {
-	position:absolute;
-	left:0px;
-	padding-left:10px;
+    position:absolute;
+    left:0px;
+    padding-left:10px;
 }
 
 .lemmonDisplay div > span:nth-child(2) {
-	padding-left:30px;
-	display:inline-block;
-	width:75px;
+    padding-left:30px;
+    display:inline-block;
+    width:75px;
 }
 
 [data-carnap-type="proofchecker"] .goal
 {
-	box-sizing:border-box;
-	position:relative;
-	min-height:30px;
-	padding:5pt;
-	bottom:-1px;
-	padding-right:40px;
-	background:white;
-	border:1px solid #A9B7C0;
+    box-sizing:border-box;
+    position:relative;
+    min-height:30px;
+    padding:5pt;
+    bottom:-1px;
+    padding-right:40px;
+    background:white;
+    border:1px solid #A9B7C0;
 }
 
 [data-carnap-type="translate"].success > .output,
@@ -415,7 +415,7 @@
 [data-carnap-type="truthtable"].success > .input, 
 [data-carnap-type="countermodeler"].success > .input,
 [data-carnap-type='qualitative'].success > .input {
-	background: #b9f2b7;
+    background: #b9f2b7;
 }
 
 [data-carnap-type="translate"].success > .output::after,
@@ -425,80 +425,80 @@
 [data-carnap-type="sequentchecker"].success > .input::after,
 [data-carnap-type="truthtable"].success > .input::after,
 [data-carnap-type='qualitative'].success > .input::after {
-	float: right;
-	content:" ✓ ";
-	font-size:16px;
+    float: right;
+    content:" ✓ ";
+    font-size:16px;
 }
 
 [data-carnap-type="proofchecker"] .aligner {
-	position: relative;
-	height:100%;
+    position: relative;
+    height:100%;
 }
 
 [data-carnap-type="proofchecker"] .checkMark,
 [data-carnap-type="proofchecker"] .proofSpinner,  
 [data-carnap-type="proofchecker"] .incompleteAlert {
-	display:none;
+    display:none;
 }
 
 [data-carnap-type="proofchecker"].success .checkMark,
 [data-carnap-type="proofchecker"].failure .incompleteAlert {
-	padding:5pt;
-	font-size:16px;
+    padding:5pt;
+    font-size:16px;
 }
 
 [data-carnap-type="proofchecker"].success .checkMark,
 [data-carnap-type="proofchecker"] .working .proofSpinner, 
 [data-carnap-type="proofchecker"].failure .incompleteAlert {
-	font-size:16px;
-	display:inline-block;
-	position:absolute;
-	text-align:center;
-	width:30px;
-	right:0px;
-	top:1px;
+    font-size:16px;
+    display:inline-block;
+    position:absolute;
+    text-align:center;
+    width:30px;
+    right:0px;
+    top:1px;
 }
 
 [data-carnap-type="proofchecker"] .buttonWrapper {
-	position:relative;
+    position:relative;
 }
 
 div[data-carnap-type="proofchecker"] .buttonWrapper button {
-	border-top:none;
+    border-top:none;
 }
 
 body[data-carnap-type="proofchecker"] { 
-	width:100%;
-	padding-bottom:0px;
-	margin:0px;
+    width:100%;
+    padding-bottom:0px;
+    margin:0px;
 }
 
 body[data-carnap-type="proofchecker"] .buttonWrapper { 
-	position:fixed;
-	bottom:0px;
-	z-index:3;
+    position:fixed;
+    bottom:0px;
+    z-index:3;
 }
 
 .ttdisplay {
-	padding-left:10px;
+    padding-left:10px;
 }
 
 .ttdisplay table {
-	border-collapse:collapse;
+    border-collapse:collapse;
 }
 
 .ttdisplay th {
-	border-bottom: 1px solid black;
+    border-bottom: 1px solid black;
 }
 
 .ttdisplay td {
-	text-align:center;
+    text-align:center;
 }
 
 [data-carnap-type="truthtable"] table{
-	width:auto;
-	border-collapse:collapse;
-	margin:20px;
+    width:auto;
+    border-collapse:collapse;
+    margin:20px;
 }
 
 [data-carnap-type="sequentchecker"] .buttonWrapper,
@@ -506,117 +506,117 @@ body[data-carnap-type="proofchecker"] .buttonWrapper {
 [data-carnap-type="truthtable"] .buttonWrapper,
 [data-carnap-type="countermodeler"] .buttonWrapper,
 [data-carnap-type="qualitative"] .buttonWrapper {
-	position:relative;
-	top:-2px;
+    position:relative;
+    top:-2px;
 }
 
 [data-carnap-type="truthtable"] select {
-	padding:0px;
-	margin:0px;
+    padding:0px;
+    margin:0px;
 }
 
 [data-carnap-type="truthtable"] th {
-	border-bottom:solid black 1px;
-	text-align:center;
+    border-bottom:solid black 1px;
+    text-align:center;
 }
 
 [data-carnap-type="truthtable"] td > span {
-	padding:0 10px 0 10px;
+    padding:0 10px 0 10px;
 }
 
 [data-carnap-type="truthtable"] .valtd {
-	width:20px;
-	text-align:center;
+    width:20px;
+    text-align:center;
 }
 
 [data-carnap-type="truthtable"] tr[highlightRow="true"] {
-	background-color: yellow;
+    background-color: yellow;
 }
 
 
 [data-carnap-type="truthtable"] td[class="rowNumber"] {
-	border-width: 4px;
-	border-color: black;
-	cursor:pointer;
-	padding: 2px;
-	background-color: aliceblue;
+    border-width: 4px;
+    border-color: black;
+    cursor:pointer;
+    padding: 2px;
+    background-color: aliceblue;
 }
 
 [data-carnap-type="truthtable"] td[class="rowNumber"]:hover {
-	background: #0073a5 !important;
-	-webkit-transition: all 0.3s;
-	-moz-transition: all 0.3s;
-	-o-transition: all 0.3s;
-	transition: all 0.3s;
+    background: #0073a5 !important;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
 }
 
 [data-carnap-type="truthtable"] th[clickabletableheader="true"] {
-	border-width: 1px;
-	border-color: black;
-	cursor:pointer;
-	padding: 2px;
-	background-color: aliceblue;
+    border-width: 1px;
+    border-color: black;
+    cursor:pointer;
+    padding: 2px;
+    background-color: aliceblue;
 }
 
 [data-carnap-type="truthtable"] td[highlightCell="true"] {
-	background-color: cornflowerblue;
+    background-color: cornflowerblue;
 }
 
 
 [data-carnap-type="truthtable"] th[clickabletableheader="true"]:hover {
-	background: #0073a5 !important;
-	-webkit-transition: all 0.3s;
-	-moz-transition: all 0.3s;
-	-o-transition: all 0.3s;
-	transition: all 0.3s;
+    background: #0073a5 !important;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    transition: all 0.3s;
 }
 
 
 
 [data-carnap-type="treedeductionchecker"] .jsonDisplay,
 [data-carnap-type="sequentchecker"] .jsonDisplay {
-	border: 1px dashed;
-	font-size:12px;
-	padding: 1em;
+    border: 1px dashed;
+    font-size:12px;
+    padding: 1em;
 }
 
 .ttthSep, .tttdSep {
-	border-left:1px solid black;
-	padding:2px;
+    border-left:1px solid black;
+    padding:2px;
 }
 
 [data-carnap-type="countermodeler"] label {
-	display: flex;
-	align-items:center;
+    display: flex;
+    align-items:center;
 }
 
 [data-carnap-qualitativetype="shortanswer"] textarea { 
-	resize: both;
-	max-width: 100%;
+    resize: both;
+    max-width: 100%;
 }
 
 [data-carnap-qualitativetype="multiplechoice"] form > div,
 [data-carnap-qualitativetype="multipleselection"] form > div { 
-	display:grid;
-	grid-template-columns: 25px auto;
+    display:grid;
+    grid-template-columns: 25px auto;
 }
 
 [data-carnap-qualitativetype="multiplechoice"] input,
 [data-carnap-qualitativetype="multipleselection"] input { 
-	height:2em;
+    height:2em;
 }
 
 
 [data-carnap-options~="fonts"] textarea,[data-carnap-options~="fonts"] .output, [data-carnap-options~="fonts"] input, [data-carnap-options~="fonts"] .goal {
-	text-rendering: optimizeLegibility;
-	font-variant-ligatures: historical-ligatures discretionary-ligatures common-ligatures contextual; 
-	font-family:"Fira Logic", monospace;
+    text-rendering: optimizeLegibility;
+    font-variant-ligatures: historical-ligatures discretionary-ligatures common-ligatures contextual; 
+    font-family:"Fira Logic", monospace;
 }
 
 [data-carnap-render-system] {
-	text-rendering: optimizeLegibility;
-	font-variant-ligatures: historical-ligatures discretionary-ligatures common-ligatures contextual; 
-	font-family:"Fira Logic", monospace;
-	color: black;
-	background: none;
+    text-rendering: optimizeLegibility;
+    font-variant-ligatures: historical-ligatures discretionary-ligatures common-ligatures contextual; 
+    font-family:"Fira Logic", monospace;
+    color: black;
+    background: none;
 }
