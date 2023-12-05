@@ -604,11 +604,6 @@ foreign import javascript unsafe "Carnap[$1]=$2;" initializeCallbackJS :: JSStri
 
 foreign import javascript unsafe "$1($2);" simpleCall :: JSVal -> JSVal -> IO ()
 
--- foreign import javascript unsafe "$1.closest('table')" js_closestTable :: Element -> IO (Maybe JSVal)
-
--- closestTable :: (Maybe JSVal) -> (Maybe Element)
--- closestTable maybeTable = fromJSVAl maybeTable
-
 submissionSource = do qr <- submissionQueryJS
                       case fromJSString qr of
                           "book" -> return $ Just Book
