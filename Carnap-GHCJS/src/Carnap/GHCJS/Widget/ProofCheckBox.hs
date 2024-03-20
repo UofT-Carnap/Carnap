@@ -142,6 +142,25 @@ checkerWith options updateres iog@(IOGoal i o g content _) w = do
                                                    Nothing -> return ()
                    addListener bt click btlistener True
                _ -> return ()
+          
+            -- Create symbols pane and add buttons to it
+           bw2 <- createButtonWrapperConst w o
+           let createSymbolBtn symbol = createSymbolButton w bw2 symbol (insertSymbolClick i symbol)
+           
+           -- case (M.lookup "transtype" options) of -- options does not contain transtype, fix this
+           --         (Just "prop") -> mapM createSymbolBtn ["→", "↔", "∧", "∨"]
+           --         _ -> mapM createSymbolBtn ["→", "↔", "∧", "∨", "∀", "∃", "≠"]
+           mapM createSymbolBtn ["→", "↔", "∧", "∨"]
+           symbolsPane <- createSymbolsPane w i
+           appendChild symbolsPane (Just bw2)
+
+           -- Get and add Show Symbols button
+           showSymbolsBtn <- getShowSymbolsButton w symbolsPane
+           appendChild bw (Just showSymbolsBtn)
+
+           -- Add hidden symbols pane
+           appendChild par (Just symbolsPane)
+
            kblistener <- newListener $ updateWithValue (\s -> updateres options w ref s (g,fd))
            addListener i keyUp kblistener False
            when (popout options) $ do
