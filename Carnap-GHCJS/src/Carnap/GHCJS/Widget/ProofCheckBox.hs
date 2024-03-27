@@ -45,7 +45,7 @@ data CheckerOptions = CheckerOptions { submit :: Maybe Button -- What's the subm
                                      , popout :: Bool -- Should the checker be able to be put in a new window?
                                      , hideNumbering :: Bool -- Should the checker hide the line numbering?
                                      , tests :: [String] --Should the checker apply tests to the conclusion?
-                                     -- , firstOrder :: Bool -- Should the checker use first-order logic?
+                                     , firstOrder :: Bool -- Should the checker use first-order logic?
                                      }
 
 optionsFromMap opts = CheckerOptions { submit = Nothing
@@ -78,7 +78,7 @@ optionsFromMap opts = CheckerOptions { submit = Nothing
                                       , popout = "popout" `elem` optlist
                                       , hideNumbering = "hideNumbering" `elem` optlist
                                       , tests = case M.lookup "tests" opts of Just s -> words s; Nothing -> []
-                                      -- , firstOrder = case M.lookup "system" opts of Just "firstOrder" -> True; Nothing -> False
+                                      , firstOrder = case M.lookup "system" opts of Just "firstOrder" -> True; Nothing -> False
                                       }
                 where optlist = case M.lookup "options" opts of Just s -> words s; Nothing -> []
 
@@ -149,10 +149,8 @@ checkerWith options updateres iog@(IOGoal i o g content _) w = do
            bw2 <- createButtonWrapperConst w o
            let createSymbolBtn symbol = createSymbolButton w bw2 symbol (insertTextClick i symbol)
            
-           -- case (M.lookup "transtype" options) of -- options does not contain transtype, fix this
-           --         (Just "prop") -> mapM createSymbolBtn ["→", "↔", "∧", "∨"]
-           --         _ -> mapM createSymbolBtn ["→", "↔", "∧", "∨", "∀", "∃", "≠"]
            mapM createSymbolBtn ["→", "↔", "∧", "∨"]
+           -- mapM createSymbolBtn (if firstOrder options then ["→", "↔", "∧", "∨", "∀", "∃", "≠"] else ["→", "↔", "∧", "∨"]) Currently super buggy
            symbolsPane <- createSymbolsPane w i
            appendChild symbolsPane (Just bw2)
 
