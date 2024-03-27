@@ -439,8 +439,8 @@ createButtonWrapperConst w o = do (Just bw) <- createElement w (Just "div")
 createSymbolsPane :: Document -> Element -> IO Element
 createSymbolsPane doc inputField = do
     (Just pane) <- createElement doc (Just "div")
-    setAttribute pane "id" "symbols-pane"
-    setAttribute pane "style" "display: none; position: absolute; border: 1px solid black; padding: 10px; background-color: white;"
+    setAttribute pane "class" "symbolsPane"
+    setAttribute pane "style" "display: none;"
 
     return pane
 
@@ -451,7 +451,7 @@ getShowSymbolsButton doc symbolsPane = do
     -- Toggle the display of the symbols pane
     clickListener <- newListener $ liftIO $ do
         (Just currentStyle) <- getAttribute symbolsPane "style"
-        let newStyle = if (fromString "none") `isInfixOf` currentStyle then "display: block;" else "display: none;"
+        let newStyle = if (fromString "none") `isInfixOf` currentStyle then "display: flex;" else "display: none;"
         setAttribute symbolsPane "style" newStyle
     addListener button click clickListener False
 
