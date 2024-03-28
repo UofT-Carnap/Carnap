@@ -78,7 +78,9 @@ optionsFromMap opts = CheckerOptions { submit = Nothing
                                       , popout = "popout" `elem` optlist
                                       , hideNumbering = "hideNumbering" `elem` optlist
                                       , tests = case M.lookup "tests" opts of Just s -> words s; Nothing -> []
-                                      , firstOrder = case M.lookup "system" opts of Just "firstOrder" -> True; Nothing -> False
+                                      , firstOrder = case M.lookup "system" opts of 
+                                            Just "firstOrder" -> True
+                                            _ -> False
                                       }
                 where optlist = case M.lookup "options" opts of Just s -> words s; Nothing -> []
 
@@ -149,8 +151,7 @@ checkerWith options updateres iog@(IOGoal i o g content _) w = do
            bw2 <- createButtonWrapperConst w o
            let createSymbolBtn symbol = createSymbolButton w bw2 symbol (insertTextClick i symbol)
            
-           mapM createSymbolBtn ["→", "↔", "∧", "∨"]
-           -- mapM createSymbolBtn (if firstOrder options then ["→", "↔", "∧", "∨", "∀", "∃", "≠"] else ["→", "↔", "∧", "∨"]) Currently super buggy
+           mapM createSymbolBtn (if firstOrder options then ["→", "↔", "∧", "∨", "∀", "∃", "≠"] else ["→", "↔", "∧", "∨"])
            symbolsPane <- createSymbolsPane w i
            appendChild symbolsPane (Just bw2)
 
