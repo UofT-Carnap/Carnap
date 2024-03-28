@@ -158,6 +158,9 @@ checkerWith options updateres iog@(IOGoal i o g content _) w = do
            showSymbolsBtn <- getShowSymbolsButton w symbolsPane
            appendChild bw (Just showSymbolsBtn)
 
+           -- Show symbols when right-click text area
+           addRightClickRevealer w symbolsPane i
+
            -- Add hidden symbols pane
            appendChild par (Just symbolsPane)
 

@@ -9,7 +9,7 @@ module Lib ( genericSendJSON, sendJSON, onEnter, onKey, doOnce, dispatchCustom, 
            , assignmentKey, initialize, mutate, initializeCallback, initCallbackObj
            , toCleanVal, popUpWith, spinnerSVG, doneButton, questionButton
            , exclaimButton, expandButton, createSubmitButton, createButtonWrapper, createButtonWrapperConst
-           , createSymbolsPane, getShowSymbolsButton, createSymbolButton, insertSymbolClick
+           , createSymbolsPane, getShowSymbolsButton, addRightClickRevealer, createSymbolButton, insertSymbolClick
            , maybeNodeListToList, trySubmit, inOpts, rewriteWith, setStatus, setSuccess, setFailure
            , ButtonStatus(..) , keyString) where
 
@@ -456,6 +456,16 @@ getShowSymbolsButton doc symbolsPane = do
     addListener button click clickListener False
 
     return button
+
+addRightClickRevealer :: Document -> Element -> Element -> IO ()
+addRightClickRevealer doc symbolsPane question = do
+
+    -- Toggle the display of the symbols pane only on right clicks
+    clickListener <- newListener $ liftIO $ do
+        (Just currentStyle) <- getAttribute symbolsPane "style"
+        let newStyle = if (fromString "none") `isInfixOf` currentStyle then "display: flex;" else "display: none;"
+        setAttribute symbolsPane "style" newStyle
+    addListener question contextMenu clickListener False
 
 createSymbolButton :: Document -> Element -> String -> EventM Element MouseEvent () -> IO Element
 createSymbolButton doc parent symbol clickHandler = do
