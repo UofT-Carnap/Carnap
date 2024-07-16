@@ -100,8 +100,8 @@ instance Inference KooQL PureLexiconFOL (Form Bool) where
      restriction (PR prems) = Just (premConstraint prems)
      restriction _          = Nothing
      
-     globalRestriction (Left ded) n UD = Just (montagueNewUniversalConstraint [tau] ded n)
-     globalRestriction (Left ded) n EI = Just (montagueNewExistentialConstraint [tau] ded n)
+     globalRestriction (Left ded) n UD = Just (kooKMMNewUniversalConstraint [tau] ded n)
+     globalRestriction (Left ded) n EI = Just (kooKMMNewExistentialConstraint [tau] ded n)
      globalRestriction _ _ _ = Nothing
 
      indirectInference (SL x) = indirectInference x

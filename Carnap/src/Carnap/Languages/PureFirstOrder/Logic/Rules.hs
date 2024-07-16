@@ -216,6 +216,43 @@ montagueNewUniversalConstraint cs ded lineno sub =
           isShow (ShowLine _ d) = d == depth (ded !! (lineno - 1))
           isShow _ = False
 
+isValidVar :: Variable -> Bool
+isValidVar (Variable v) = v `elem` ['i'..'z']
+
+kooKMMNewExistentialConstraint :: [Sequent] -> Deduction -> Int -> Substitution -> Maybe String
+kooKMMNewExistentialConstraint cs ded lineno sub = 
+    if any (\x -> any (occursIn x) relevantForms) cs'
+       || any (isBoundVar . snd) introducedVars
+        then Just $ "A variable in " ++ show cs' ++ " occurs before this line, or a new variable is out of the allowed range 'i' to 'z', or the variable is bound within its own scope. This rule requires a variable not occurring (free or bound) on any earlier line, and within 'i' to 'z'."
+        else Nothing
+    where 
+        cs' = map (fromSequent . applySub sub) cs
+        relevantLines = take (lineno - 1) ded
+        relevantForms = catMaybes $ map assertion relevantLines
+        occursIn x y = occurs x y
+                       || boundVarOf x y
+                       || any (boundVarOf x) (toListOf formsOf y)
+        introducedVars = [v | (_, TermVar (Variable v)) <- M.toList sub, isValidVar (Variable v)]
+        isBoundVar x = any (boundVarOf x) relevantForms  -- Check if the variable is bound within its own scope
+
+kooKMMNewUniversalConstraint :: [Sequent] -> Deduction -> Int -> Substitution -> Maybe String
+kooKMMNewUniversalConstraint cs ded lineno sub = 
+    case relevantForms of
+        [] -> Just "No show line found for this rule. This rule requires a preceding show line. Remember to align opening and closing lines of subproofs."
+        x:xs | boundVarOf c' x -> if any (occurs c') xs 
+                                      then Just $ "The variable " ++ show c' ++ " occurs freely somewhere before the show line of this rule."
+                                      else Nothing
+        _ -> if not (isValidVar c') 
+             then Just $ "The variable " ++ show c' ++ " is not within the allowed range 'i' to 'z'."
+             else Just $ "The variable " ++ show c' ++ " is not bound in the show line of this rule."
+    where 
+        c' = fromSequent $ applySub sub (head cs)
+        relevantLines = dropWhile (not . isShow) $ reverse $ take lineno ded
+        relevantForms = catMaybes $ map assertion relevantLines
+        isShow (ShowLine _ d) = d == depth (ded !! (lineno - 1))
+        isShow _ = False
+        isValidVar (Variable v) = v `elem` ['i'..'z']  -- Ensure variable is within i-z range
+
 -------------------------
 --  1.1. Common Rules  --
 -------------------------
