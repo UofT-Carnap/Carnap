@@ -5,6 +5,7 @@ module Carnap.Languages.PureFirstOrder.Logic.KooQL
 
 import Data.Map as M (lookup, Map,empty)
 import Text.Parsec
+import Text.Parsec.String (Parser)
 import Text.Parsec.Expr
 import Control.Monad.Identity
 import Carnap.Core.Unification.Unification (applySub)
