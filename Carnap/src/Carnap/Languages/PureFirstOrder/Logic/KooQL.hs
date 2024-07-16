@@ -5,7 +5,6 @@ module Carnap.Languages.PureFirstOrder.Logic.KooQL
 
 import Data.Map as M (lookup, Map,empty)
 import Text.Parsec
-import Text.Parsec.String (Parser)
 import Text.Parsec.Expr
 import Control.Monad.Identity
 import Carnap.Core.Unification.Unification (applySub)
@@ -133,29 +132,21 @@ parseKooQL rtc = try quantRule <|> liftProp
 
 kooQLParserOptions :: FirstOrderParserOptions PureLexiconFOL u Identity
 kooQLParserOptions = FirstOrderParserOptions 
-    { atomicSentenceParser = \x -> singlePlacePredicateParser x
-                                   <|> kooParsePredicateSymbol "ABCDEFGHIJKLMNO" x
-                                   <|> sentenceLetterParser "PQRSTUVWXYZ"
-                                   <|> equalsParser x 
-                                   <|> inequalityParserStrict x
-    , quantifiedSentenceParser' = kooQuantifiedSentenceParser
-    , freeVarParser = parseFreeVar "ijklmnopqrstuvwxyz"
-    , constantParser = Just (parseConstant "abcdefgh") 
-    , functionParser = Just (\x -> kooParseFunctionSymbol "abcdefgh" x)
-    , hasBooleanConstants = False
-    , parenRecur = \opt recurWith -> parenParser (recurWith opt) >>= boolean
-    , opTable = kooOpTable
-    , finalValidation = const (pure ())
-    }
-    where 
-        boolean a = if isBoolean a then return a else unexpected "atomic or quantified sentence wrapped in parentheses"
-        
-        singlePlacePredicateParser :: String -> Parser (Form Bool)
-        singlePlacePredicateParser _ = do
-            predicate <- oneOf "ABCDEFGHIJKLMNO"
-            var <- parseFreeVar "ijklmnopqrstuvwxyz"
-            return $ MonPred (fromEnum predicate - fromEnum 'A') (\v -> Var (show v))
-                        
+                         { atomicSentenceParser = \x -> kooParsePredicateSymbol "ABCDEFGHIJKLMNO" x
+                                                        <|> sentenceLetterParser "PQRSTUVWXYZ"
+                                                        <|> equalsParser x 
+                                                        <|> inequalityParserStrict x
+                         , quantifiedSentenceParser' = kooQuantifiedSentenceParser
+                         , freeVarParser = parseFreeVar "ijklmnopqrstuvwxyz"
+                         , constantParser = Just (parseConstant "abcdefgh") 
+                         , functionParser = Just (\x -> kooParseFunctionSymbol "abcdefgh" x)
+                         , hasBooleanConstants = False
+                         , parenRecur = \opt recurWith  -> parenParser (recurWith opt) >>= boolean
+                         , opTable = kooOpTable
+                         , finalValidation = const (pure ())
+                         }
+                    where boolean a = if isBoolean a then return a else unexpected "atomic or quantified sentence wrapped in parentheses"
+                         
 kooSubFormulaParser :: ( BoundVars lex
                         , BooleanLanguage (FixLang lex (Form Bool))
                         , BooleanConstLanguage (FixLang lex (Form Bool))

@@ -36,6 +36,22 @@ import Control.Lens (toListOf, preview)
 import Control.Lens.Plated (children)
 import Text.Parsec (parse, spaces, sepEndBy1, char, eof, optional, try, (<|>))
 
+class CounterexampleRef a where
+    getRowToTva :: a -> Int -> IO (Maybe Bool)
+    updateCounterexample :: a -> Bool -> IO ()
+
+instance CounterexampleRef (IORef Bool) where
+    getRowToTva ref _ = readIORef ref >>= \v -> return (Just v)
+    updateCounterexample ref val = writeIORef ref val
+
+instance CounterexampleRef (IORef [Maybe TVA]) where
+    getRowToTva ref row = do
+        tvas <- readIORef ref
+        if row >= 0 && row < length tvas
+            then return (tvas !! row)
+            else return Nothing
+    updateCounterexample ref val = modifyIORef ref (const [Just (TVA val)])
+
 truthTableAction :: IO ()
 truthTableAction = initElements getTruthTables activateTruthTables
 
@@ -223,38 +239,31 @@ assembleTable w opts o orderedChildren valuations atomIndicies admissibleRows =
           givens = makeGivens opts (Just $ length valuations) orderedChildren
 
 
-addCounterexample :: Document -> Map String String -> Element -> HTMLInputElement -> IORef [Maybe TVA] -> [Int] -> CounterexampleData -> IO ()
+addCounterexample :: Document -> Map String String -> Element -> HTMLInputElement -> IORef Bool -> [Int] -> CounterexampleData -> IO ()
 addCounterexample w opts bw i ref atomIndices ceData = do
-    (Just doc) <- getCurrentDocument
-    let rowToTva row = do
-            tvas <- readIORef ref
-            if row >= 0 && row < length tvas
-            then return (Just (tvas !! row))
-            else return Nothing
-
-    -- Create an input field for row number
-    (Just rowInput) <- createElement doc (Just "input")
+    -- Create an input field for row number (for interface consistency, but not needed for partial tables)
+    (Just rowInput) <- createElement w (Just "input")
     setAttribute rowInput "type" "number"
     appendChild bw (Just rowInput)
 
     -- Add a button to submit the row number
-    (Just submitButton) <- createElement doc (Just "button")
+    (Just submitButton) <- createElement w (Just "button")
     setInnerHTML submitButton (Just "Submit Row Number")
     appendChild bw (Just submitButton)
 
     submitListener <- newListener $ do
-        Just rowStr <- getValue (castToHTMLInputElement rowInput)
-        let row = read rowStr
-        mTva <- rowToTva row
-        case mTva of
-            Just tva -> handleCounterexample tva ceData
-            Nothing  -> setInnerHTML i (Just "Invalid row number")
+        Just _ <- getValue (castToHTMLInputElement rowInput)  -- Ignoring the row number since partial tables have one row
+        let row = 0  -- Since there's only one row, we always use row 0
+        result <- readIORef ref
+        if result
+            then handleCounterexample True ceData
+            else handleCounterexample False ceData
 
     addEventListener submitButton "click" submitListener False
 
 
 tryCounterexample :: Document -> Map String String -> IORef Bool -> Element 
-    -> [Int] -> IORef [Maybe TVA] -> CounterexampleData -> IO ()
+    -> [Int] -> IORef [Maybe Bool] -> CounterexampleData -> IO ()
 tryCounterexample w opts ref i indices tvasRef counterexampleData = 
     do Just w' <- getDefaultView w
        mrow <- prompt w' ("Give the row number that shows " ++ promptText counterexampleData) (Just "")
@@ -264,23 +273,39 @@ tryCounterexample w opts ref i indices tvasRef counterexampleData =
                case readMaybe s of
                  Nothing -> alert w' "not a readable row number"
                  Just row -> do
-                     tvas <- readIORef tvasRef
-                     if row >= 0 && row < length tvas
-                         then case tvas !! row of
-                                Nothing -> alert w' "invalid row number"
-                                Just v  -> do let s = counterexampleTest counterexampleData v
-                                              Just wrap <- getParentElement i
-                                              if "exam" `inOpts` opts 
-                                                  then do alert w' "Counterexample received - If you're confident that it is correct, press Submit to submit it."
-                                                          writeIORef ref s
-                                                  else if s then 
-                                                       do alert w' "Success!"
-                                                          writeIORef ref True
-                                                          setSuccess w wrap 
-                                                       else do alert w' "Something's not quite right"
-                                                               writeIORef ref False
-                                                               setFailure w wrap 
-                         else alert w' "row number out of bounds"
+                     if "partial" `inOpts` opts
+                         then do
+                             result <- readIORef ref
+                             let s = counterexampleTest counterexampleData result
+                             Just wrap <- getParentElement i
+                             if "exam" `inOpts` opts 
+                                 then do alert w' "Counterexample received - If you're confident that it is correct, press Submit to submit it."
+                                         writeIORef ref s
+                                 else if s then 
+                                      do alert w' "Success!"
+                                         writeIORef ref True
+                                         setSuccess w wrap 
+                                      else do alert w' "Something's not quite right"
+                                              writeIORef ref False
+                                              setFailure w wrap
+                         else do
+                             tvas <- readIORef tvasRef
+                             if row >= 0 && row < length tvas
+                                 then case tvas !! row of
+                                        Nothing -> alert w' "invalid row number"
+                                        Just v  -> do let s = counterexampleTest counterexampleData v
+                                                      Just wrap <- getParentElement i
+                                                      if "exam" `inOpts` opts 
+                                                          then do alert w' "Counterexample received - If you're confident that it is correct, press Submit to submit it."
+                                                                  writeIORef ref s
+                                                          else if s then 
+                                                               do alert w' "Success!"
+                                                                  writeIORef ref True
+                                                                  setSuccess w wrap 
+                                                               else do alert w' "Something's not quite right"
+                                                                       writeIORef ref False
+                                                                       setFailure w wrap 
+                                 else alert w' "row number out of bounds"
   where
     promptText (CounterexampleData _ Inequivalent _ arg) = "these sentences are inequivalent" ++ if arg then " under the given premises." else "."
     promptText (CounterexampleData _ Consistent plur arg ) = (if plur then "these sentences are " else "this sentence is ")
