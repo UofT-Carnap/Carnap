@@ -379,17 +379,17 @@ type RowRef = IORef (Map Int (Maybe Bool))
 
 type ContractableRowRef = (IORef (Map Int (Maybe Bool)), [Either Char PureForm])
 
-createPartialTruthTable :: Document -> ([PureForm],[PureForm]) -> (Element,Element) -> IORef Bool 
+createPartialTruthTable :: Document -> ([PureForm], [PureForm]) -> (Element, Element) -> IORef Bool 
     -> Element -> Map String String -> IO (IO Bool, ContractableRowRef)
-createPartialTruthTable w (gs,fs) (i,o) ref bw opts = 
+createPartialTruthTable w (gs, fs) (i, o) ref bw opts = 
         do (table, thead, tbody) <- initTable w
            case M.lookup "counterexample-to" opts of
-               Just "equivalence" -> addCounterexample w opts bw i ref atomIndicies (CounterexampleData isEquivCE Inequivalent isPlural False)
-               Just "inconsistency" -> addCounterexample w opts bw i ref atomIndicies (CounterexampleData isInconCE Consistent isPlural False)
-               Just "contradiction" -> addCounterexample w opts bw i ref atomIndicies (CounterexampleData isInconCE NonContradiction isPlural False)
-               Just "tautology" -> addCounterexample w opts bw i ref atomIndicies (CounterexampleData isTautCE NonTautology isPlural False)
-               Just "validity" -> addCounterexample w opts bw i ref atomIndicies (CounterexampleData isTautCE Invalid isPlural False)
-               _ -> do addCounterexample w opts bw i ref atomIndicies (CounterexampleData isTautCE GeneralCounterexample isPlural False)
+               Just "equivalence" -> addCounterexample w opts bw i ref atomIndices (CounterexampleData isEquivCE Inequivalent isPlural False)
+               Just "inconsistency" -> addCounterexample w opts bw i ref atomIndices (CounterexampleData isInconCE Consistent isPlural False)
+               Just "contradiction" -> addCounterexample w opts bw i ref atomIndices (CounterexampleData isInconCE NonContradiction isPlural False)
+               Just "tautology" -> addCounterexample w opts bw i ref atomIndices (CounterexampleData isTautCE NonTautology isPlural False)
+               Just "validity" -> addCounterexample w opts bw i ref atomIndices (CounterexampleData isValCE Invalid isPlural True)
+               _ -> do addCounterexample w opts bw i ref atomIndices (CounterexampleData isTautCE GeneralCounterexample isPlural False)
            setInnerHTML i (Just . intercalate ", " . map (rewriteWith opts . show) $ fs)
            rRef <- makeRowRef (length orderedChildren)
            head <- toPartialHead
@@ -397,16 +397,18 @@ createPartialTruthTable w (gs,fs) (i,o) ref bw opts =
            appendChild tbody (Just row)
            appendChild thead (Just head)
            appendChild o (Just table)
-           return (check rRef,(rRef,orderedChildren))
-    where atomIndicies = nub . sortIdx . concatMap getIndicies $ fs ++ gs
-          valuations = (map toValuation) . subsequences $ reverse atomIndicies
+           return (check rRef, (rRef, orderedChildren))
+    where 
+          atomIndices = nub . sortIdx . concatMap getIndices $ fs ++ gs
+          valuations = map toValuation . subsequences $ reverse atomIndices
           orderedConstraints = concat . intersperse [Left ','] . map toOrderedChildren $ gs
           orderedSolvables = concat . intersperse [Left ','] . map toOrderedChildren $ fs
-          orderedChildren = orderedConstraints ++ orderedSolvables
+          orderedChildren = orderedConstraints ++ [Left '⊢'] ++ orderedSolvables
           isTautCE v = and (map (not . unform . satisfies v) fs)
           isEquivCE v = not (and vals || and (map not vals))
               where vals = map (not . unform . satisfies v) fs
           isInconCE v = and (map (unform . satisfies v) fs)
+          isValCE v = and (map (unform . satisfies v) gs) && and (map (not . unform . satisfies v) fs)
           isPlural = length fs > 1
           blank = all (`elem` [' ','\t'])
           givens = case map packText . filter (not . blank) . lines <$> M.lookup "content" opts of
@@ -426,6 +428,9 @@ createPartialTruthTable w (gs,fs) (i,o) ref bw opts =
                                  constraintThs <- mapM (toChildTh w) orderedConstraints >>= rewriteThs opts
                                  mapM_ (appendChild row . Just) constraintThs
                                  appendChild row (Just sep)
+                                 Just turnstile <- createElement w (Just "th")
+                                 setInnerHTML turnstile (Just "⊢")
+                                 appendChild row (Just turnstile)
                                  mapM_ (appendChild row . Just) childThs
                    return row
           check rRef = do rMap <- readIORef rRef
@@ -438,12 +443,13 @@ createPartialTruthTable w (gs,fs) (i,o) ref bw opts =
                       (~=) _ Nothing           = True
                       (~=) (Left _) _          = True
                       (~=) (Right t) (Just t') = t == t'
-          matches rMap v (Left _,_) = True
-          matches rMap v (Right f,m) = 
+          matches rMap v (Left _, _) = True
+          matches rMap v (Right f, m) = 
             case M.lookup m rMap of
                 Just (Just tv) -> Form tv == satisfies v f
                 _ -> False
 
+toPartialRow :: Document -> Map String String -> [PureForm] -> [PureForm] -> RowRef -> [Int -> Bool] -> [[Maybe Bool]] -> IO Element
 toPartialRow w opts orderedSolvables orderedConstraints rRef v givens = 
         do Just row <- createElement w (Just "tr")
            solveTds <- mapM toChildTd (Prelude.drop sepIndex zipped)
@@ -456,35 +462,31 @@ toPartialRow w opts orderedSolvables orderedConstraints rRef v givens =
                        appendChild row (Just sep)
                        mapM_ (appendChild row . Just) solveTds
            return row
-
     where sepIndex = length orderedConstraints
           zipped = zip3 (orderedConstraints ++ orderedSolvables) [1 ..] givenRow
           givenRow = last givens
-          --XXX The givens are passed around in reverse order - this is
-          --actually the first row
-          toChildTd (c,m,mg) = do Just td <- createElement w (Just "td")
-                                  case c of
-                                      Left _ -> setInnerHTML td (Just "")
-                                      Right _ -> addDropdown m td mg
-                                  return td
+          toChildTd (c, m, mg) = do Just td <- createElement w (Just "td")
+                                    case c of
+                                        Left _ -> setInnerHTML td (Just "")
+                                        Right _ -> addDropdown m td mg
+                                    return td
 
-          toConstTd (c,m,mg) = do Just td <- createElement w (Just "td")
-                                  case c of
-                                      Left _ -> setInnerHTML td (Just "")
-                                      Right _ -> case mg of
-                                         --TODO: DRY
-                                         Just val -> do Just span <- createElement w (Just "span")
-                                                        setInnerHTML span (Just $ if val then trueMark opts else falseMark opts)
-                                                        modifyIORef rRef (M.insert m mg)
-                                                        appendChild td (Just span)
-                                                        return ()
-                                         Nothing ->  do sel <- trueFalseOpts w opts False mg
-                                                        modifyIORef rRef (M.insert m mg)
-                                                        onSwitch <- newListener $ switch rRef m
-                                                        addListener sel change onSwitch False
-                                                        appendChild td (Just sel)
-                                                        return ()
-                                  return td
+          toConstTd (c, m, mg) = do Just td <- createElement w (Just "td")
+                                    case c of
+                                        Left _ -> setInnerHTML td (Just "")
+                                        Right _ -> case mg of
+                                           Just val -> do Just span <- createElement w (Just "span")
+                                                          setInnerHTML span (Just $ if val then trueMark opts else falseMark opts)
+                                                          modifyIORef rRef (M.insert m mg)
+                                                          appendChild td (Just span)
+                                                          return ()
+                                           Nothing ->  do sel <- trueFalseOpts w opts False mg
+                                                          modifyIORef rRef (M.insert m mg)
+                                                          onSwitch <- newListener $ switch rRef m
+                                                          addListener sel change onSwitch False
+                                                          appendChild td (Just sel)
+                                                          return ()
+                                    return td
 
           addDropdown m td mg = do case mg of
                                        Just val | "strictGivens" `inOpts` opts || "immutable" `inOpts` opts -> 
