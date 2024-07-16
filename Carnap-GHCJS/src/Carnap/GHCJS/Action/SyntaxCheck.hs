@@ -4,7 +4,7 @@ module Carnap.GHCJS.Action.SyntaxCheck (syntaxCheckAction) where
 import Lib
 import Carnap.Languages.Util.GenericParsers
 import Carnap.Languages.PurePropositional.Parser
-import Carnap.Languages.PurePropositional.Syntax 
+import Carnap.Languages.PurePropositional.Syntax
 import Carnap.Languages.PurePropositional.Util
 import Carnap.Languages.Util.LanguageClasses
 import Carnap.Calculi.NaturalDeduction.Syntax (NaturalDeductionCalc(..))
@@ -21,21 +21,15 @@ import Control.Lens.Plated (children)
 import Text.Parsec
 import GHCJS.DOM
 import GHCJS.DOM.Element
---the import below is needed to make ghc-mod work properly. GHCJS compiles
---using the generated javascript FFI versions of 2.4.0, but those are
---slightly different from the webkit versions of 2.4.0. In particular,
---Element doesn't export IsElement, although Types does in the webkit
---version---but it's the other way around in the FFI version. This appears
---to be cleaner in 3.0, but there's no documentation for that at all, yet.
 import GHCJS.DOM.Types
 import GHCJS.DOM.HTMLInputElement (HTMLInputElement, getValue, setValue)
-import GHCJS.DOM.Document (Document,createElement, getBody, getDefaultView)
+import GHCJS.DOM.Document (Document, createElement, getBody, getDefaultView)
 import GHCJS.DOM.Node (appendChild, getParentNode, getParentElement, insertBefore)
 import GHCJS.DOM.KeyboardEvent
 import GHCJS.DOM.EventM
 import Control.Monad.IO.Class (MonadIO, liftIO)
 
-syntaxCheckAction:: IO ()
+syntaxCheckAction :: IO ()
 syntaxCheckAction = initElements getCheckers activateChecker
 
 -- Helper function to check for mixed ANDs and ORs
@@ -47,8 +41,8 @@ hasMixedAndOrs formula = '∧' `elem` formula && '∨' `elem` formula
 --formulas in the todo list. The labeling makes it possible to identify
 --which formula is in the queue, even when there are several
 --syntactically indistinguishable formulas
-tryMatch :: Element -> IORef (PureForm, [(PureForm, Int)], Tree (PureForm, Int), Int) 
-            -> Document -> (PureForm -> String) -> M.Map String String 
+tryMatch :: Element -> IORef (PureForm, [(PureForm, Int)], Tree (PureForm, Int), Int)
+            -> Document -> (PureForm -> String) -> M.Map String String
             -> EventM HTMLInputElement KeyboardEvent ()
 tryMatch o ref w sf opts = onEnter $ 
         do Just t <- target :: EventM HTMLInputElement KeyboardEvent (Maybe HTMLInputElement)
@@ -56,7 +50,7 @@ tryMatch o ref w sf opts = onEnter $
            (f, forms, ft, stage) <- liftIO $ readIORef ref
            setValue t (Just "")
            case forms of
-               [] -> liftIO $ do Just wrap1<- getParentElement o
+               [] -> liftIO $ do Just wrap1 <- getParentElement o
                                  Just wrap2 <- getParentElement wrap1
                                  redraw Nothing ft
                                  setSuccess w wrap2
@@ -66,12 +60,12 @@ tryMatch o ref w sf opts = onEnter $
                                [] -> shorten x xs stage
                                children -> updateGoal x (zip children [(stage + 1)..]) xs (stage + length children + 1)
                        else do message $ "Sorry, that's not the main connective. Try again!"
-                               resetGoal
+                               -- Do not call resetGoal here
                    Left e -> case children (fst x) of
                           [] -> shorten x xs stage
                           _ -> message "what you've entered doesn't appear to be a connective"
         where optlist = case M.lookup "options" opts of Just s -> words s; Nothing -> []
-              --updates the goal, by adding labeled formulas to the todo ist, 
+              --updates the goal, by adding labeled formulas to the todo list, 
               --developing the tree with those labeled formulas at the given label, and 
               --advances the stage
               updateGoal x cs xs stage = 
@@ -144,25 +138,25 @@ activateChecker w (Just (i,o,opts)) =
         case M.lookup "matchtype" opts of
              (Just "match") -> activateMatchWith (rewriteWith opts . show)
              (Just "matchclean") -> activateMatchWith (rewriteWith opts . showClean)
-             _ -> return () 
-    where formParser = maybe (purePropFormulaParser standardLetters) id (M.lookup "system" opts >>= (ndParseForm `ofPropSys`)) 
+             _ -> return ()
+    where formParser = maybe (purePropFormulaParser standardLetters) id (M.lookup "system" opts >>= (ndParseForm `ofPropSys`))
 
           activateMatchWith :: (PureForm -> String) -> IO ()
           activateMatchWith sf =
               case M.lookup "goal" opts of
                   Just g ->
                     case parse (formParser <* eof) "" g of
-                      (Right f) -> do 
+                      (Right f) -> do
                          bw <- createButtonWrapper w o
-                         ref <- newIORef (f,[(f,0)], T.Node (f,0) [], 0)  
+                         ref <- newIORef (f,[(f,0)], T.Node (f,0) [], 0)
                          let submit = submitSyn w opts ref
                          btStatus <- createSubmitButton w bw submit opts
                          (Just tree) <- createElement w (Just "div")
                          appendChild o (Just tree)
-                         setInnerHTML tree (Just $ sf f)                   
+                         setInnerHTML tree (Just $ sf f)
                          setAttribute tree "class" "tree"
-                         mpar@(Just par) <- getParentNode o               
-                         insertBefore par (Just bw) (Just o)                    
+                         mpar@(Just par) <- getParentNode o
+                         insertBefore par (Just bw) (Just o)
                          match <- newListener $ tryMatch tree ref w sf opts
                          (Just w') <- getDefaultView w
                          doOnce i keyUp False $ liftIO $ btStatus Edited
@@ -172,10 +166,31 @@ activateChecker w (Just (i,o,opts)) =
                          appendChild bw (Just resetButton)
                          resetGoal <- newListener $ resetGoalWrapper tree ref sf
                          addListener resetButton click resetGoal False
+
+                         -- Create symbol buttons
+                         createSymbolButtons w bw i
+
                       (Left e) -> setInnerHTML o (Just $ show e)
                   _ -> print "syntax check was missing an option"
 activateChecker _ Nothing  = return ()
 
+-- Function to create symbol buttons
+createSymbolButtons :: Document -> Element -> HTMLInputElement -> IO ()
+createSymbolButtons w container inputElem = do
+    let symbols = ["∧", "∨", "→", "↔", "~"]
+    mapM_ (createButton w container inputElem) symbols
+
+-- Function to create a single button for a symbol
+createButton :: Document -> Element -> HTMLInputElement -> String -> IO ()
+createButton w container inputElem symbol = do
+    (Just btn) <- createElement w (Just "button")
+    setInnerHTML btn (Just symbol)
+    appendChild container (Just btn)
+    clickListener <- newListener $ do
+        currentValue <- getValue inputElem
+        let newValue = maybe symbol (++ symbol) currentValue
+        setValue inputElem (Just newValue)
+    addListener btn click clickListener False
 
 resetGoalWrapper :: Element
                     -> IORef (PureForm, [(PureForm, Int)], Tree (PureForm, Int), Int)
@@ -193,9 +208,8 @@ resetFn o ref sf = do
     liftIO $ writeIORef ref (f, [(f, 0)], T.Node (f, 0) [], 0)
     liftIO $ setInnerHTML o (Just $ sf f)
 
-
 submitSyn :: IsEvent e => Document -> M.Map String String -> IORef (PureForm,[(PureForm,Int)], Tree (PureForm,Int),Int) -> String -> EventM HTMLInputElement e ()
 submitSyn w opts ref l = do (f,forms,_,_) <- liftIO $ readIORef ref
-                            case forms of 
+                            case forms of
                                [] -> do trySubmit w SyntaxCheck opts l (ProblemContent (pack $ show f)) True
                                _  -> message "not yet finished"

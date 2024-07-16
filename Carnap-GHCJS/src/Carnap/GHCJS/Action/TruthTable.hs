@@ -223,65 +223,76 @@ assembleTable w opts o orderedChildren valuations atomIndicies admissibleRows =
           givens = makeGivens opts (Just $ length valuations) orderedChildren
 
 
-addCounterexample :: Document -> Map String String ->  Element -> Element 
-    -> IORef Bool -> [Int] -> CounterexampleData
-    -> IO ()
-addCounterexample w opts bw i ref atomIndicies counterexampleData
-    | "nocounterexample" `inOpts` opts = return ()
-    | otherwise = do bt <- exclaimButton w (buttonText (counterexampleProperty counterexampleData ))
-                     counterexample <- newListener $ liftIO $ tryCounterexample w opts ref i atomIndicies counterexampleData
-                     addListener bt click counterexample False
-                     appendChild bw (Just bt)
-                     return ()
-    where buttonText Inequivalent = "Inequivalent"
-          buttonText Consistent = "Consistent"
-          buttonText NonContradiction = "Non-Contradiction"
-          buttonText Invalid = "Invalid"
-          buttonText NonTautology = "Non-Tautology"
-          buttonText GeneralCounterexample = "Counterexample"
+addCounterexample :: Document -> Map String String -> Element -> HTMLInputElement -> IORef [Maybe TVA] -> [Int] -> CounterexampleData -> IO ()
+addCounterexample w opts bw i ref atomIndices ceData = do
+    (Just doc) <- getCurrentDocument
+    let rowToTva row = do
+            tvas <- readIORef ref
+            if row >= 0 && row < length tvas
+            then return (Just (tvas !! row))
+            else return Nothing
+
+    -- Create an input field for row number
+    (Just rowInput) <- createElement doc (Just "input")
+    setAttribute rowInput "type" "number"
+    appendChild bw (Just rowInput)
+
+    -- Add a button to submit the row number
+    (Just submitButton) <- createElement doc (Just "button")
+    setInnerHTML submitButton (Just "Submit Row Number")
+    appendChild bw (Just submitButton)
+
+    submitListener <- newListener $ do
+        Just rowStr <- getValue (castToHTMLInputElement rowInput)
+        let row = read rowStr
+        mTva <- rowToTva row
+        case mTva of
+            Just tva -> handleCounterexample tva ceData
+            Nothing  -> setInnerHTML i (Just "Invalid row number")
+
+    addEventListener submitButton "click" submitListener False
 
 
 tryCounterexample :: Document -> Map String String -> IORef Bool -> Element 
-    -> [Int] -> CounterexampleData -> IO ()
-tryCounterexample w opts ref i indicies counterexampleData = 
-        do Just w' <- getDefaultView w
-           mrow <- prompt w' ("Give the truth values for a row that shows " ++ promptText counterexampleData) (Just "")
-           case mrow of 
-               Nothing -> return ()
-               Just s -> 
-                   case checkLength =<< (clean $ map charToTruthValue s) of
-                     Nothing -> alert w' "not a readable row"
-                     Just l -> do let v = listToVal l
-                                  let s = counterexampleTest counterexampleData v
-                                  Just wrap <- getParentElement i
-                                  if "exam" `inOpts` opts 
-                                      then do alert w' "Counterexample received - If you're confident that it is correct, press Submit to submit it."
-                                              writeIORef ref s
-                                      else if s then 
-                                           do alert w' "Success!"
-                                              writeIORef ref True
-                                              setSuccess w wrap 
-                                      else do alert w' "Something's not quite right"
-                                              writeIORef ref False
-                                              setFailure w wrap 
- 
-        where clean (Nothing:xs) = Nothing
-              clean (Just x:xs) = (:) <$> (Just x) <*> (clean xs)
-              clean [] = Just []
-              listToVal l = toValuation (mask l indicies)
-              mask (x:xs) (y:ys) = if x then y:(mask xs ys) else mask xs ys
-              mask [] _ = []
-              checkLength l = if length l == length indicies then Just l else Nothing
-              promptText (CounterexampleData _ Inequivalent _ arg) = "these sentences are inequivalent" ++ if arg then " under the given premises." else "."
-              promptText (CounterexampleData _ Consistent plur arg ) = (if plur then "these sentences are " else "this sentence is ")
-                                                                       ++ "consistent" ++ if arg then " under the given premises." else "."
-              promptText (CounterexampleData _ NonContradiction False arg) = "this sentence is not self-contradictory" 
-                                                                           ++ if arg then " under the given premises." else "."
-              promptText (CounterexampleData _ NonContradiction True arg) = "these sentences are not mutually contradictory" 
-                                                                          ++ if arg then " under the given premises." else "."
-              promptText (CounterexampleData _ Invalid plur False) = (if plur then "these sentences are all " else "this sentence is ") ++ "invalid."
-              promptText (CounterexampleData _ Invalid _ True) = "this argument is invalid."
-              promptText (CounterexampleData _ _ _ _) = "you have a counterexample."
+    -> [Int] -> IORef [Maybe TVA] -> CounterexampleData -> IO ()
+tryCounterexample w opts ref i indices tvasRef counterexampleData = 
+    do Just w' <- getDefaultView w
+       mrow <- prompt w' ("Give the row number that shows " ++ promptText counterexampleData) (Just "")
+       case mrow of 
+           Nothing -> return ()
+           Just s -> 
+               case readMaybe s of
+                 Nothing -> alert w' "not a readable row number"
+                 Just row -> do
+                     tvas <- readIORef tvasRef
+                     if row >= 0 && row < length tvas
+                         then case tvas !! row of
+                                Nothing -> alert w' "invalid row number"
+                                Just v  -> do let s = counterexampleTest counterexampleData v
+                                              Just wrap <- getParentElement i
+                                              if "exam" `inOpts` opts 
+                                                  then do alert w' "Counterexample received - If you're confident that it is correct, press Submit to submit it."
+                                                          writeIORef ref s
+                                                  else if s then 
+                                                       do alert w' "Success!"
+                                                          writeIORef ref True
+                                                          setSuccess w wrap 
+                                                       else do alert w' "Something's not quite right"
+                                                               writeIORef ref False
+                                                               setFailure w wrap 
+                         else alert w' "row number out of bounds"
+  where
+    promptText (CounterexampleData _ Inequivalent _ arg) = "these sentences are inequivalent" ++ if arg then " under the given premises." else "."
+    promptText (CounterexampleData _ Consistent plur arg ) = (if plur then "these sentences are " else "this sentence is ")
+                                                            ++ "consistent" ++ if arg then " under the given premises." else "."
+    promptText (CounterexampleData _ NonContradiction False arg) = "this sentence is not self-contradictory" 
+                                                                ++ if arg then " under the given premises." else "."
+    promptText (CounterexampleData _ NonContradiction True arg) = "these sentences are not mutually contradictory" 
+                                                               ++ if arg then " under the given premises." else "."
+    promptText (CounterexampleData _ Invalid plur False) = (if plur then "these sentences are all " else "this sentence is ") ++ "invalid."
+    promptText (CounterexampleData _ Invalid _ True) = "this argument is invalid."
+    promptText (CounterexampleData _ _ _ _) = "you have a counterexample."
+
 
 toRow :: Document -> Map String String -> [Int] 
     -> [Either Char PureForm] -> GridRef
