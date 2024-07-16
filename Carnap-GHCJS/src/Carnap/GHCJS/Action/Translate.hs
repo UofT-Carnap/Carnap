@@ -179,6 +179,89 @@ tryTrans_wrap w parser equiv tests wrapper ref fs =
                              writeIORef ref False 
                              setFailure w wrapper
 
+activateWith parser checker tests =
+    case (M.lookup "goal" opts, M.lookup "content" opts, M.lookup "problem" opts) of
+        (Just g, Just content, Just problem) ->
+            case parse (spaces *> parser `sepBy` (spaces >> char ',' >> spaces) <* eof) "" (getGoal g) of
+                (Right fs) -> do
+                    bw <- createButtonWrapper w o
+                    ref <- newIORef False
+                    let submit = submitTrans w opts i ref fs parser checker tests
+                    let check = checkTrans w parser checker tests bw ref fs
+
+                    btStatus <- createSubmitButton w bw submit opts
+                    checkButton <- createCheckButton w bw check
+
+                    -- Create symbols pane and add buttons to it
+                    bw2 <- createButtonWrapperConst w o
+                    let createSymbolBtn symbol = createSymbolButton w bw2 symbol (insertSymbolClick i symbol)
+                    case (M.lookup "transtype" opts) of
+                        (Just "prop") -> mapM createSymbolBtn ["→", "↔", "∧", "∨", "~"]
+                        _ -> mapM createSymbolBtn ["→", "↔", "∧", "∨", "∀", "∃", "≠", "~"]
+                    symbolsPane <- createSymbolsPane w i
+
+                    -- Get Show Symbols button
+                    showSymbolsBtn <- getShowSymbolsButton w symbolsPane
+
+                    resetButton <- questionButton w "Reset"
+                    appendChild bw (Just resetButton)
+                    appendChild symbolsPane (Just bw2)
+                    resetIt <- newListener $ resetAnswer i o opts
+                    addListener resetButton click resetIt False
+
+                    -- Initially set input box to empty
+                    setValue (castToHTMLInputElement i) (Just "")
+
+                    doOnce i input False $ liftIO $ btStatus Edited
+                    setInnerHTML o (Just problem)
+                    mpar@(Just par) <- getParentNode o
+                    insertBefore par (Just bw) (Just o)
+                    appendChild bw (Just showSymbolsBtn)
+                    insertBefore par (Just symbolsPane) (Just o)
+                    Just wrapper <- getParentElement o
+                    setAttribute i "enterKeyHint" "go"
+                    translate <- newListener $ tryTrans w parser checker tests wrapper ref fs
+                    if "nocheck" `elem` optlist 
+                        then return ()
+                        else addListener i keyUp translate False                  
+                (Left e) -> setInnerHTML o (Just $ show e)
+        _ -> print "translation was missing an option"
+
+checkTrans :: Document -> Parsec String () (FixLang lex sem) -> BinaryTest lex sem -> UnaryTest lex sem
+           -> Element -> IORef Bool -> [FixLang lex sem] -> EventM HTMLButtonElement MouseEvent ()
+checkTrans w parser equiv tests wrapper ref fs =
+    do elts <- getListOfElementsByTag wrapper "input"
+       i <- case elts of
+                (x:_) -> case x of
+                    Just element -> return element
+                    Nothing      -> Prelude.error "Empty element in the list"
+                _     -> Prelude.error "Empty list of elements"
+       Just ival <- getValue (castToHTMLInputElement i)
+       case parse (spaces *> parser <* eof) "" ival of
+            Right f -> liftIO $ case tests f of
+                Nothing -> checkForm f
+                Just msg -> writeIORef ref False >> message ("Looks like " ++ msg ++ ".")
+            Left e -> message "Sorry, try again---that formula isn't grammatical."
+    where checkForm f'
+            | f' `elem` fs = do message "Perfect match!"
+                                writeIORef ref True
+                                setSuccess w wrapper
+            | any (\f -> f' `equiv` f) fs = do message "Correct!"
+                                               writeIORef ref True
+                                               setSuccess w wrapper
+            | otherwise = do message "Not quite. Try again?"
+                             writeIORef ref False 
+                             setFailure w wrapper
+
+createCheckButton :: Document -> Element -> EventM HTMLButtonElement MouseEvent () -> IO HTMLButtonElement
+createCheckButton doc parent action = do
+    button <- createElement doc "button"
+    setInnerHTML button (Just "Check")
+    appendChild parent (Just button)
+    checkIt <- newListener action
+    addListener button click checkIt False
+    return button
+
 submitTrans w opts i ref fs parser checker tests l =
         do isFinished <- liftIO $ readIORef ref
            (Just v) <- getValue (castToHTMLInputElement i)
