@@ -179,33 +179,21 @@ tryTrans_wrap w parser equiv tests wrapper ref fs =
                              writeIORef ref False 
                              setFailure w wrapper
 
-activateWith parser checker tests =
+activateWith :: Parsec String () (FixLang lex sem) -> BinaryTest lex sem -> UnaryTest lex sem 
+             -> Document -> Maybe (Element, Element, M.Map String String) -> IO ()
+activateWith parser checker tests w (Just (i, o, opts)) = do
     case (M.lookup "goal" opts, M.lookup "content" opts, M.lookup "problem" opts) of
         (Just g, Just content, Just problem) ->
             case parse (spaces *> parser `sepBy` (spaces >> char ',' >> spaces) <* eof) "" (getGoal g) of
-                (Right fs) -> do
+                Right fs -> do
                     bw <- createButtonWrapper w o
                     ref <- newIORef False
                     let submit = submitTrans w opts i ref fs parser checker tests
-                    let check = checkTrans w parser checker tests bw ref fs
-
                     btStatus <- createSubmitButton w bw submit opts
-                    checkButton <- createCheckButton w bw check
-
-                    -- Create symbols pane and add buttons to it
-                    bw2 <- createButtonWrapperConst w o
-                    let createSymbolBtn symbol = createSymbolButton w bw2 symbol (insertSymbolClick i symbol)
-                    case (M.lookup "transtype" opts) of
-                        (Just "prop") -> mapM createSymbolBtn ["→", "↔", "∧", "∨", "~"]
-                        _ -> mapM createSymbolBtn ["→", "↔", "∧", "∨", "∀", "∃", "≠", "~"]
-                    symbolsPane <- createSymbolsPane w i
-
-                    -- Get Show Symbols button
-                    showSymbolsBtn <- getShowSymbolsButton w symbolsPane
+                    checkButton <- createCheckButton w bw (checkTrans w parser checker tests bw ref fs)
 
                     resetButton <- questionButton w "Reset"
                     appendChild bw (Just resetButton)
-                    appendChild symbolsPane (Just bw2)
                     resetIt <- newListener $ resetAnswer i o opts
                     addListener resetButton click resetIt False
 
@@ -216,16 +204,16 @@ activateWith parser checker tests =
                     setInnerHTML o (Just problem)
                     mpar@(Just par) <- getParentNode o
                     insertBefore par (Just bw) (Just o)
-                    appendChild bw (Just showSymbolsBtn)
-                    insertBefore par (Just symbolsPane) (Just o)
+                    appendChild bw (Just checkButton)
                     Just wrapper <- getParentElement o
                     setAttribute i "enterKeyHint" "go"
                     translate <- newListener $ tryTrans w parser checker tests wrapper ref fs
-                    if "nocheck" `elem` optlist 
+                    if "nocheck" `elem` optlist
                         then return ()
-                        else addListener i keyUp translate False                  
-                (Left e) -> setInnerHTML o (Just $ show e)
+                        else addListener i keyUp translate False
+                Left e -> setInnerHTML o (Just $ show e)
         _ -> print "translation was missing an option"
+activateWith _ _ _ _ Nothing = return ()
 
 checkTrans :: Document -> Parsec String () (FixLang lex sem) -> BinaryTest lex sem -> UnaryTest lex sem
            -> Element -> IORef Bool -> [FixLang lex sem] -> EventM HTMLButtonElement MouseEvent ()
