@@ -252,6 +252,7 @@ kooKMMNewUniversalConstraint cs ded lineno sub =
         isShow (ShowLine _ d) = d == depth (ded !! (lineno - 1))
         isShow _ = False
         isValidVar (Variable v) = v `elem` ['i'..'z']  -- Ensure variable is within i-z range
+        isBoundVar x = any (boundVarOf x) relevantForms
 
 -------------------------
 --  1.1. Common Rules  --
