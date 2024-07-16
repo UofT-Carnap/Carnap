@@ -142,16 +142,18 @@ kooQLParserOptions = FirstOrderParserOptions
     , constantParser = Just (parseConstant "abcdefgh") 
     , functionParser = Just (\x -> kooParseFunctionSymbol "abcdefgh" x)
     , hasBooleanConstants = False
-    , parenRecur = \opt recurWith  -> parenParser (recurWith opt) >>= boolean
+    , parenRecur = \opt recurWith -> parenParser (recurWith opt) >>= boolean
     , opTable = kooOpTable
     , finalValidation = const (pure ())
     }
     where 
         boolean a = if isBoolean a then return a else unexpected "atomic or quantified sentence wrapped in parentheses"
-        singlePlacePredicateParser x = do
+        
+        singlePlacePredicateParser :: String -> Parser (Form Bool)
+        singlePlacePredicateParser _ = do
             predicate <- oneOf "ABCDEFGHIJKLMNO"
             var <- parseFreeVar "ijklmnopqrstuvwxyz"
-            return $ PApp (Pred predicate) [var]
+            return $ MonPred (fromEnum predicate - fromEnum 'A') (\v -> Var (show v))
                         
 kooSubFormulaParser :: ( BoundVars lex
                         , BooleanLanguage (FixLang lex (Form Bool))
