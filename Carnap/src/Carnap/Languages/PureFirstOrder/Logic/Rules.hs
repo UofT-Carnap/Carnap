@@ -274,7 +274,7 @@ type FirstOrderEqRule lex b =
         ) => SequentRule lex (Form b)
 
 eqReflexivity :: FirstOrderEqRule lex b
-eqReflexivity = [] ∴ Top :|-: SS (tau `equals` tau)
+eqReflexivity = [GammaV 1 :|-: Top] ∴ GammaV 1 :|-: SS (tau `equals` tau)
 
 eqSymmetry :: FirstOrderEqRule lex b
 eqSymmetry = [GammaV 1 :|-: SS (tau `equals` tau')] ∴ GammaV 1 :|-: SS (tau' `equals` tau)
