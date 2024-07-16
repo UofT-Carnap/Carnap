@@ -132,21 +132,27 @@ parseKooQL rtc = try quantRule <|> liftProp
 
 kooQLParserOptions :: FirstOrderParserOptions PureLexiconFOL u Identity
 kooQLParserOptions = FirstOrderParserOptions 
-                         { atomicSentenceParser = \x -> kooParsePredicateSymbol "ABCDEFGHIJKLMNO" x
-                                                        <|> sentenceLetterParser "PQRSTUVWXYZ"
-                                                        <|> equalsParser x 
-                                                        <|> inequalityParserStrict x
-                         , quantifiedSentenceParser' = kooQuantifiedSentenceParser
-                         , freeVarParser = parseFreeVar "ijklmnopqrstuvwxyz"
-                         , constantParser = Just (parseConstant "abcdefgh") 
-                         , functionParser = Just (\x -> kooParseFunctionSymbol "abcdefgh" x)
-                         , hasBooleanConstants = False
-                         , parenRecur = \opt recurWith  -> parenParser (recurWith opt) >>= boolean
-                         , opTable = kooOpTable
-                         , finalValidation = const (pure ())
-                         }
-                    where boolean a = if isBoolean a then return a else unexpected "atomic or quantified sentence wrapped in parentheses"
-                         
+    { atomicSentenceParser = \x -> singlePlacePredicateParser x
+                                   <|> kooParsePredicateSymbol "ABCDEFGHIJKLMNO" x
+                                   <|> sentenceLetterParser "PQRSTUVWXYZ"
+                                   <|> equalsParser x 
+                                   <|> inequalityParserStrict x
+    , quantifiedSentenceParser' = kooQuantifiedSentenceParser
+    , freeVarParser = parseFreeVar "ijklmnopqrstuvwxyz"
+    , constantParser = Just (parseConstant "abcdefgh") 
+    , functionParser = Just (\x -> kooParseFunctionSymbol "abcdefgh" x)
+    , hasBooleanConstants = False
+    , parenRecur = \opt recurWith  -> parenParser (recurWith opt) >>= boolean
+    , opTable = kooOpTable
+    , finalValidation = const (pure ())
+    }
+    where 
+        boolean a = if isBoolean a then return a else unexpected "atomic or quantified sentence wrapped in parentheses"
+        singlePlacePredicateParser x = do
+            predicate <- oneOf "ABCDEFGHIJKLMNO"
+            var <- parseFreeVar "ijklmnopqrstuvwxyz"
+            return $ PApp (Pred predicate) [var]
+                        
 kooSubFormulaParser :: ( BoundVars lex
                         , BooleanLanguage (FixLang lex (Form Bool))
                         , BooleanConstLanguage (FixLang lex (Form Bool))

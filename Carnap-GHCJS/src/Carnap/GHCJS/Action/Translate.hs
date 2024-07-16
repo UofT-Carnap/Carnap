@@ -93,16 +93,16 @@ activateTranslate w (Just (i,o,opts)) = do
                            bw2 <- createButtonWrapperConst w o
                            let createSymbolBtn symbol = createSymbolButton w bw2 symbol (insertSymbolClick i symbol)
                            case (M.lookup "transtype" opts) of
-                                 (Just "prop") -> mapM createSymbolBtn ["→", "↔", "∧", "∨"]
-                                 _ -> mapM createSymbolBtn ["→", "↔", "∧", "∨", "∀", "∃", "≠"]
+                                 (Just "prop") -> mapM createSymbolBtn ["→", "↔", "∧", "∨", "~"]
+                                 _ -> mapM createSymbolBtn ["→", "↔", "∧", "∨", "∀", "∃", "≠", "~"]
                            symbolsPane <- createSymbolsPane w i
-                           appendChild symbolsPane (Just bw2)
 
                            -- Get Show Symbols button
                            showSymbolsBtn <- getShowSymbolsButton w symbolsPane                            
 
                            resetButton <- questionButton w "Reset"
                            appendChild bw (Just resetButton)
+                           appendChild symbolsPane (Just bw2)
                            resetIt <- newListener $ resetAnswer i o opts
                            addListener resetButton click resetIt False
                            

@@ -38,6 +38,10 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 syntaxCheckAction:: IO ()
 syntaxCheckAction = initElements getCheckers activateChecker
 
+-- Helper function to check for mixed ANDs and ORs
+hasMixedAndOrs :: String -> Bool
+hasMixedAndOrs formula = '∧' `elem` formula && '∨' `elem` formula
+
 -- XXX:this could be cleaner. The basic idea is that we maintain a "stage"
 --in development and use the stages to match formulas in the tree with
 --formulas in the todo list. The labeling makes it possible to identify
@@ -105,24 +109,32 @@ tryMatch o ref w sf opts = onEnter $
                                return ()
 
 parseConnective :: Monad m => ParsecT String u m String
-parseConnective = choice [getAnd, getOr, getIff, getIf, getNeg]
-    where tstringsToTry :: Monad m => [String] -> PurePropLanguage (Form Bool -> Form Bool -> Form Bool) -> ParsecT String u m String
-          tstringsToTry l c = stringsToTry l (show c)
-          getAnd = tstringsToTry ["/\\", "∧", "^", "&"] (review _and ())
-          getOr  = tstringsToTry ["\\/", "∨", "v", "|"] (review _or ())
-          getIf  = tstringsToTry [ "=>", "->", ">", "→"]  (review _if ())
-          getIff = tstringsToTry [ "<=>",  "<->", "<>", "↔"] (review _iff ())
-          getNeg = do spaces
-                      _ <- string "-" <|> string "~" <|> string "¬"
-                      return (show (review _not () :: PurePropLanguage (Form Bool-> Form Bool)))
+parseConnective = do
+    input <- getInput
+    if hasMixedAndOrs input
+        then fail "Formulas with mixed ANDs and ORs are not well-formed."
+        else choice [getAnd, getOr, getIff, getIf, getNeg]
+    where
+        tstringsToTry :: Monad m => [String] -> PurePropLanguage (Form Bool -> Form Bool -> Form Bool) -> ParsecT String u m String
+        tstringsToTry l c = stringsToTry l (show c)
+        getAnd = tstringsToTry ["/\\", "∧", "^", "&"] (review _and ())
+        getOr  = tstringsToTry ["\\/", "∨", "v", "|"] (review _or ())
+        getIf  = tstringsToTry [ "=>", "->", ">", "→"]  (review _if ())
+        getIff = tstringsToTry [ "<=>",  "<->", "<>", "↔"] (review _iff ())
+        getNeg = do
+            spaces
+            _ <- string "-" <|> string "~" <|> string "¬"
+            return (show (review _not () :: PurePropLanguage (Form Bool -> Form Bool)))
 
 matchMC :: String -> PureForm -> Either ParseError Bool
-matchMC c f = do con <- parse parseConnective "" c
-                 mc  <- mcOf f
-                 return $ con == mc
-        where mcOf :: (Schematizable (f (FixLang f)), CopulaSchema (FixLang f)) => FixLang f a -> Either ParseError String
-              mcOf (h :!$: t) = mcOf h
-              mcOf h = Right (show h)
+matchMC c f = do
+    con <- parse parseConnective "" c
+    mc  <- mcOf f
+    return $ con == mc
+    where
+        mcOf :: (Schematizable (f (FixLang f)), CopulaSchema (FixLang f)) => FixLang f a -> Either ParseError String
+        mcOf (h :!$: t) = mcOf h
+        mcOf h = Right (show h)
 
 getCheckers :: IsElement self => Document -> self -> IO [Maybe (Element, Element, M.Map String String)]
 getCheckers d = genInOutElts d "input" "div" "synchecker"
