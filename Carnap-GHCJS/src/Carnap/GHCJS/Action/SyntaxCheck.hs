@@ -168,7 +168,7 @@ activateChecker w (Just (i,o,opts)) =
                          addListener resetButton click resetGoal False
 
                          -- Create symbol buttons
-                         createSymbolButtons w bw i
+                         createSymbolButtons w bw (castToHTMLInputElement i)
 
                       (Left e) -> setInnerHTML o (Just $ show e)
                   _ -> print "syntax check was missing an option"
