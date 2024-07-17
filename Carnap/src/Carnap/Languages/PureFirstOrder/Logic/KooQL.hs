@@ -132,20 +132,31 @@ parseKooQL rtc = try quantRule <|> liftProp
 
 kooQLParserOptions :: FirstOrderParserOptions PureLexiconFOL u Identity
 kooQLParserOptions = FirstOrderParserOptions 
-                         { atomicSentenceParser = \x -> kooParsePredicateSymbol "ABCDEFGHIJKLMNO" x
-                                                        <|> sentenceLetterParser "PQRSTUVWXYZ"
-                                                        <|> equalsParser x 
-                                                        <|> inequalityParserStrict x
-                         , quantifiedSentenceParser' = kooQuantifiedSentenceParser
-                         , freeVarParser = parseFreeVar "ijklmnopqrstuvwxyz"
-                         , constantParser = Just (parseConstant "abcdefgh") 
-                         , functionParser = Just (\x -> kooParseFunctionSymbol "abcdefgh" x)
-                         , hasBooleanConstants = False
-                         , parenRecur = \opt recurWith  -> parenParser (recurWith opt) >>= boolean
-                         , opTable = kooOpTable
-                         , finalValidation = const (pure ())
-                         }
-                    where boolean a = if isBoolean a then return a else unexpected "atomic or quantified sentence wrapped in parentheses"
+    { atomicSentenceParser = \x -> kooParsePredicateSymbol "ABCDEFGHIJKLMNO" x
+                                    <|> sentenceLetterParser "PQRSTUVWXYZ"
+                                    <|> equalsParser x 
+                                    <|> inequalityParserStrict x
+    , quantifiedSentenceParser' = kooQuantifiedSentenceParser
+    , freeVarParser = parseFreeVar "ijklmnopqrstuvwxyz"
+    , constantParser = Just (parseConstant "abcdefgh") 
+    , functionParser = Just (\x -> kooParseFunctionSymbol "abcdefgh" x)
+    , hasBooleanConstants = False
+    , parenRecur = \opt recurWith -> parenParser (recurWith opt) >>= ensureNoAtomicOrQuantified
+    , opTable = kooOpTable
+    , finalValidation = const (pure ())
+    }
+    where
+        ensureNoAtomicOrQuantified a =
+            if isAtomicOrQuantified a
+                then unexpected "atomic or quantified sentence wrapped in parentheses"
+                else return a
+
+        isAtomicOrQuantified expr =
+            case expr of
+                AtomicSentence _ -> True
+                QuantifiedSentence _ -> True
+                _ -> False
+
                          
 kooSubFormulaParser :: ( BoundVars lex
                         , BooleanLanguage (FixLang lex (Form Bool))
