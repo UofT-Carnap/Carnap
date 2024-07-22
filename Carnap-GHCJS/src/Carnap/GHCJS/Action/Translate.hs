@@ -7,6 +7,7 @@ import Carnap.Calculi.Tableau.Data
 import Carnap.Calculi.NaturalDeduction.Syntax (NaturalDeductionCalc(..))
 import Carnap.Core.Data.Types (FixLang, Form, Term, BoundVars, FirstOrderLex)
 import Carnap.Languages.PurePropositional.Logic (ofPropSys, ofPropTreeSys)
+import Carnap.Languages.PurePropositional.Logic.KooSL (kooSLNotation)
 import Carnap.Languages.ModalPropositional.Logic (ofModalPropSys)
 import Carnap.Languages.PureSecondOrder.Logic (ofSecondOrderSys) 
 import Carnap.Languages.SetTheory.Logic (ofSetTheorySys, ofSetTheoryTreeSys)
@@ -135,16 +136,6 @@ activateChecker _ Nothing  = return ()
 resetAnswer :: Element -> Element -> M.Map String String -> EventM Element MouseEvent ()
 resetAnswer inputElem outputElem opts = liftIO $ do
     setValue (castToHTMLInputElement inputElem) (Just "")
-
-kooSLNotation :: String -> String
-kooSLNotation = map replace
-    where
-        replace '⊢' = '∴'
-        replace '¬' = '~'
-        replace '@' = '∀'
-        replace '3' = '∃'
-        replace c = c
-
 
 tryTrans :: Eq (FixLang lex sem) => 
     Document -> Parsec String () (FixLang lex sem) -> BinaryTest lex sem -> UnaryTest lex sem
