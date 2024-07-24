@@ -34,7 +34,6 @@ import GHCJS.DOM.Document (Document,createElement, getBody, getDefaultView)
 import GHCJS.DOM.Node (appendChild, getParentNode, getParentElement, insertBefore)
 import GHCJS.DOM.KeyboardEvent
 import GHCJS.DOM.EventM
-import GHCJS.DOM.DOMTokenList
 import Control.Monad.IO.Class (MonadIO, liftIO)
 
 syntaxCheckAction:: IO ()
@@ -186,11 +185,6 @@ resetFn parentDiv o ref sf = do
     liftIO $ writeIORef ref (f, [(f, 0)], T.Node (f, 0) [], 0)
     liftIO $ setInnerHTML o (Just $ sf f)
     removeClassFromElement parentDiv "success"
-
-removeClassFromElement :: Element -> String -> IO ()
-removeClassFromElement element className = do
-    Just classList <- getClassList element
-    GHCJS.DOM.DOMTokenList.remove classList [className]
 
 submitSyn :: IsEvent e => Document -> M.Map String String -> IORef (PureForm,[(PureForm,Int)], Tree (PureForm,Int),Int) -> String -> EventM HTMLInputElement e ()
 submitSyn w opts ref l = do (f,forms,_,_) <- liftIO $ readIORef ref

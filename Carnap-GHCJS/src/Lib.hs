@@ -4,7 +4,7 @@ module Lib ( genericSendJSON, sendJSON, onEnter, onKey, doOnce, dispatchCustom, 
            , treeToElement, genericTreeToUl, treeToUl, genericListToUl
            , listToUl, formToTree, leaves, adjustFirstMatching, decodeHtml
            , decodeJSON,toJSONString, cleanString, syncScroll, reloadPage, initElements
-           , errorPopup, genInOutElts, getInOutElts,generateExerciseElts
+           , errorPopup, genInOutElts, getInOutElts,generateExerciseElts, removeClassFromElement
            , message, IOGoal(..), updateWithValue, submissionSource
            , assignmentKey, initialize, mutate, initializeCallback, initCallbackObj
            , toCleanVal, popUpWith, spinnerSVG, doneButton, questionButton
@@ -38,6 +38,7 @@ import GHCJS.Types
 import GHCJS.Foreign
 import GHCJS.Foreign.Callback
 import GHCJS.Marshal
+import GHCJS.DOM.DOMTokenList (remove)
 #endif
 --the import below required to make ghc-mod work properly. GHCJS compiles
 --using the generated javascript FFI versions of 2.4.0, but those are
@@ -392,6 +393,12 @@ createSubmitButton w bw submit opts =
              addListener bt click submitter False                
              return (setStatus w bt)
          _ -> return (const $ return ())
+
+removeClassFromElement :: Element -> String -> IO ()
+removeClassFromElement element className = do
+    Just classList <- getClassList element
+    GHCJS.DOM.DOMTokenList.remove classList [className]
+
 
 setStatus w b Edited = setAttribute b "data-carnap-exercise-status" "edited"
 setStatus w b Submitted = do dispatchCustom w b "problem-submission"

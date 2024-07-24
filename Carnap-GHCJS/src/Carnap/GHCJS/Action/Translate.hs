@@ -135,6 +135,8 @@ activateChecker _ Nothing  = return ()
 
 resetAnswer :: Element -> Element -> M.Map String String -> EventM Element MouseEvent ()
 resetAnswer inputElem outputElem opts = liftIO $ do
+    Just parentDiv <- getParentElement inputElem
+    removeClassFromElement parentDiv "success"
     setValue (castToHTMLInputElement inputElem) (Just "")
 
 tryTrans :: Eq (FixLang lex sem) => 
