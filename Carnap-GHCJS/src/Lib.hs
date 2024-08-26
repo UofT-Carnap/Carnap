@@ -488,6 +488,7 @@ insertSymbolClick inputElement symbol = liftIO $ do
     (Just val) <- getValue (castToHTMLInputElement inputElement)
     let newValue = val ++ symbol
     setValue (castToHTMLInputElement inputElement) (Just newValue)
+    focus inputElement
 
 --------------------------------------------------------
 --1.7 Parsing

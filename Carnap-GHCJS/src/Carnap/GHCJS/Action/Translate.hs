@@ -101,8 +101,8 @@ activateTranslate w (Just (i,o,opts)) = do
                            bw2 <- createButtonWrapperConst w o
                            let createSymbolBtn symbol = createSymbolButton w bw2 symbol (insertSymbolClick i symbol)
                            case (M.lookup "transtype" opts) of
-                                 (Just "prop") -> mapM createSymbolBtn ["→", "↔", "∧", "∨"]
-                                 _ -> mapM createSymbolBtn ["→", "↔", "∧", "∨", "∀", "∃", "≠"]
+                                 (Just "prop") -> mapM createSymbolBtn ["~", "→", "↔", "∧", "∨"]
+                                 _ -> mapM createSymbolBtn ["~", "→", "↔", "∧", "∨", "∀", "∃", "≠"]
                            symbolsPane <- createSymbolsPane w i
                             -- Get Show Symbols button
                            showSymbolsBtn <- getShowSymbolsButton w symbolsPane     
