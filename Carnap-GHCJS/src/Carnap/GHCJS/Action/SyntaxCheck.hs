@@ -63,7 +63,6 @@ tryMatch o ref w sf opts = onEnter $
                                [] -> shorten x xs stage
                                children -> updateGoal x (zip children [(stage + 1)..]) xs (stage + length children + 1)
                        else do message $ "Sorry, that's not the main connective. Try again!"
-                               resetGoal
                    Left e -> case children (fst x) of
                           [] -> shorten x xs stage
                           _ -> message "what you've entered doesn't appear to be a connective"
@@ -88,9 +87,6 @@ tryMatch o ref w sf opts = onEnter $
                                                                 setAttribute wrap2 "class" "success"
                                                                 modifyIORef ref (_2 .~ []) 
                                               _  -> updateGoal x [] xs stage
-              resetGoal = do (f,_,_,_) <- liftIO $ readIORef ref
-                             liftIO $ writeIORef ref (f, [(f,0)], T.Node (f,0) [],0)
-                             setInnerHTML o (Just $ sf f)
               dev x xs = adjustFirstMatching leaves (== T.Node x []) (dev' xs)
               dev' xs (T.Node x _) = T.Node x (map nodify xs)
               nodify x = T.Node x []
