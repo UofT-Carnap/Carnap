@@ -161,6 +161,17 @@ activateChecker w (Just (i,o,opts)) =
                          appendChild bw (Just resetButton)
                          resetGoal <- newListener $ resetGoalWrapper i tree ref sf
                          addListener resetButton click resetGoal False
+
+                         bw2 <- createButtonWrapperConst w o
+                         let createSymbolBtn symbol = createSymbolButton w bw2 symbol (insertSymbolClick i symbol)
+                         mapM createSymbolBtn ["~", "→", "↔", "∧", "∨"]
+                         symbolsPane <- createSymbolsPane w i
+                         appendChild symbolsPane (Just bw2)
+
+                         showSymbolsBtn <- getShowSymbolsButton w symbolsPane 
+                         appendChild bw (Just showSymbolsBtn)
+                         appendChild par (Just symbolsPane)
+                         return ()
                       (Left e) -> setInnerHTML o (Just $ show e)
                   _ -> print "syntax check was missing an option"
 activateChecker _ Nothing  = return ()
