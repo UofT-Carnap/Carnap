@@ -126,14 +126,14 @@ activateTranslate w (Just (i,o,opts)) = do
                            mpar@(Just par) <- getParentNode o               
                            insertBefore par (Just bw) (Just o)
                            appendChild bw (Just showSymbolsBtn)
-                        --    insertBefore par (Just symbolsPane) (Just o)
                            appendChild par (Just symbolsPane)
                            Just wrapper <- getParentElement o
-                           setAttribute i "enterKeyHint" "go"
-                           translate <- newListener $ tryTrans w parser checker tests wrapper ref fs
-                           if "nocheck" `elem` optlist 
-                               then return ()
-                               else addListener i keyUp translate False
+                           return ()
+                        --    setAttribute i "enterKeyHint" "go"
+                        --    translate <- newListener $ tryTrans w parser checker tests wrapper ref fs
+                        --    if "nocheck" `elem` optlist 
+                        --        then return ()
+                        --        else addListener i keyUp translate False
                       (Left e) -> setInnerHTML o (Just $ show e)
                   _ -> print "translation was missing an option"
 activateChecker _ Nothing  = return ()
