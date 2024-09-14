@@ -253,7 +253,7 @@ kooParsePredicateSymbol s parseTerm = parse <?> "a predicate symbol"
                         midx <- optionMaybe (char '_' >> posnumber)
                         let Just n = ucIndex c 
                             m = maybe 0 id midx
-                        ((char '(' *> argParserNoParen parseTerm (ppn (n + (m * 26)) AOne) <* char ')')
+                        ((char '(' *> argParserNoParenMult parseTerm (ppn (n + (m * 26)) AOne) <* char ')')
                             <|>
                             argParseOne parseTerm (ppn (n + (m * 26)) AOne))
 
@@ -513,6 +513,18 @@ argParserNoParen ::
 argParserNoParen pt p = do t <- pt
                            incrementHeadNoParen pt p t
                                <|> return (p :!$: t)
+
+argParserNoParenMult :: 
+    ( Typeable b
+    , Typeable t2
+    , Incrementable lex t2
+    , Monad m) => ParsecT String u m (FixLang lex t2) -> FixLang lex (t2 -> b) 
+            -> ParsecT String u m (FixLang lex b)
+argParserNoParenMult pt p = do  
+    t <- pt
+    case incBody p of
+        Just p' -> incrementHeadNoParen pt (p' :!$: t) t
+        Nothing -> fail "Weird error with function"
 
 argParseOne ::
     ( Typeable b
