@@ -249,13 +249,15 @@ kooParsePredicateSymbol ::
     , Typeable arg
     ) => String -> ParsecT String u m (FixLang lex arg) -> ParsecT String u m (FixLang lex ret)
 kooParsePredicateSymbol s parseTerm = parse <?> "a predicate symbol"
-    where parse = do    c <- oneOf s
-                        midx <- optionMaybe (char '_' >> posnumber)
-                        let Just n = ucIndex c 
-                            m = maybe 0 id midx
-                        ((char '(' *> argParserNoParen parseTerm (ppn (n + (m * 26)) AOne) <* char ')')
-                            <|>
-                            argParseOne parseTerm (ppn (n + (m * 26)) AOne))
+    where parse = do
+            c <- oneOf s
+            midx <- optionMaybe (char '_' >> posnumber)
+            let Just n = ucIndex c 
+                m = maybe 0 id midx
+            -- Parse either a term in parentheses or concatenated characters
+            ((char '(' *> argParserWithCount parseTerm (ppn (n + (m * 26)) AOne) <* char ')')
+                <|>
+                argParseOne parseTerm (ppn (n + (m * 26)) AOne))
 
 quantifiedSentenceParser, lplQuantifiedSentenceParser, altAltQuantifiedSentenceParser, altQuantifiedSentenceParser, kooQuantifiedSentenceParser :: 
     ( QuantLanguage (FixLang lex f) (FixLang lex t)
@@ -514,15 +516,6 @@ argParserNoParen pt p = do t <- pt
                            incrementHeadNoParen pt p t
                                <|> return (p :!$: t)
 
-argParseOne ::
-    ( Typeable b
-    , Typeable t2
-    , Incrementable lex t2
-    , Monad m) => ParsecT String u m (FixLang lex t2) -> FixLang lex (t2 -> b) 
-            -> ParsecT String u m (FixLang lex b)
-argParseOne pt p = do   t <- pt
-                        return (p :!$: t)
-
 incrementHeadNoParen :: 
     ( Monad m
     , Typeable t2
@@ -533,3 +526,47 @@ incrementHeadNoParen ::
 incrementHeadNoParen pt p t = case incBody p of
                                    Just p' -> argParserNoParen pt (p' :!$: t)
                                    Nothing -> fail "Weird error with function"
+
+-- New helper function to count the number of arguments in parentheses
+argParserWithCount :: 
+    ( Typeable b
+    , Typeable t2
+    , Incrementable lex t2
+    , Monad m) => ParsecT String u m (FixLang lex t2) -> FixLang lex (t2 -> b) 
+            -> ParsecT String u m (FixLang lex b)
+argParserWithCount pt p = do
+    arg1 <- pt  -- Parse the first argument
+    spaces
+    -- Try to parse a second argument (required for validity)
+    argCount <- optionMaybe (parseNextArg pt 1 p arg1)
+    case argCount of
+        Just result -> return result  -- Successfully parsed multiple arguments
+        Nothing -> fail "Expected at least two arguments inside parentheses"  -- Fail if only one argument is found
+
+-- Increment argument count to ensure at least two arguments are present
+parseNextArg ::
+    ( Typeable b
+    , Typeable t2
+    , Incrementable lex t2
+    , Monad m) => ParsecT String u m (FixLang lex t2) -> Int -> FixLang lex (t2 -> b) 
+            -> FixLang lex t2 -> ParsecT String u m (FixLang lex b)
+parseNextArg pt count p t = do
+    let nextCount = count + 1  -- Increment count with each additional argument
+    case incBody p of
+        Just p' -> do
+            nextArg <- pt  -- Parse the next argument
+            spaces
+            -- Continue parsing more arguments, or return if no more characters are found
+            (parseNextArg pt nextCount (p' :!$: t) nextArg) <|> return (p' :!$: t :!$: nextArg)
+        Nothing -> fail "Error with function parsing"
+
+-- Parsing a single argument without parentheses
+argParseOne ::
+    ( Typeable b
+    , Typeable t2
+    , Incrementable lex t2
+    , Monad m) => ParsecT String u m (FixLang lex t2) -> FixLang lex (t2 -> b) 
+            -> ParsecT String u m (FixLang lex b)
+argParseOne pt p = do
+    t <- pt  -- Parse the argument
+    return (p :!$: t)  -- Return the parsed result
