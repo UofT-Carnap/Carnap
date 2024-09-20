@@ -203,7 +203,7 @@ howardSnyderOpTable = [[ Prefix (try parseNeg)
 kooOpTable :: (BooleanLanguage (FixLang lex (Form Bool)), Monad m)
     => [[Operator String u m (FixLang lex (Form Bool))]]
 kooOpTable = [ [ Prefix (try parseNegStrict)]
-                  , [Infix (try parseOr) AssocLeft, Infix (try parseAnd) AssocLeft]
+                  , [Infix (try parseOr) AssocNone, Infix (try parseAnd) AssocNone]
                   , [Infix (try parseIf) AssocNone, Infix (try parseIff) AssocNone]
                   ]
 

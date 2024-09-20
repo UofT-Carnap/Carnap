@@ -1,0 +1,149 @@
+```{.Translate .Prop system="KooKMM-QL"}
+3.1 P : People want to know what's going on.
+3.2 P->Q : If people want to know what's going on, then questions will be raised.
+3.3 Q->P : Questions will be raised only if people want to know what's going on.
+3.4 (P -> Q) -> ~R : Given that questions will be raised if people want to know what's going on, Randy's not wrangling a deal.
+3.5 R -> (~Q ->S ) : If Randy's wrangling a deal, then provided that questions won't be raised, somebody is going to get rich.
+3.6 S -> R : Somebody is going to get rich only provided that Randy's wrangling a deal.
+3.7  R -> ~Q : Assuming that Randy's wrangling a deal, questions won't be raised.
+3.8 S -> (~R -> P) : In the case where somebody is going to get rich, if Randy's not wrangling a deal, then people want to know what's going on.
+3.9 ~Q -> S : Questions won't be raised only on the condition that somebody is going to get rich.
+3.10 ~(R->S) : It's not the case that if Randy's wrangling a deal, then somebody is going to get rich 
+```
+
+```{.Translate .FOL system="KooKMM-QL"}
+15.1 F(a) : Jules is European.
+15.2 F(a)/\-H(a) : Jules is European but not emotional.
+15.3 (F(a)/\F(b))/\(G(b)/\-G(a)) : Jules and Jim are both European, but Jim is dramatic and Jules is not.
+```
+
+
+```{.Translate .FOL system="KooKMM-QL"}
+19.1 @xBx : Everything is bananas
+19.2 @x(Bx) : Everything is bananas
+19.3 @xB(x) : Everything is bananas
+```
+
+```{.Translate .FOL system="KooKMM-SL"}
+20.1 @xBx : Everything is bananas
+```
+
+```{.ProofChecker .KooKMM-SL options="render font indent render"} 
+21.1 ~P :|-: Q->P
+```
+
+```{.ProofChecker .prop options="render font indent render"} 
+21.2 ~P :|-: Q->P
+```
+
+```{.ProofChecker .KooKMM-QL options="render font indent"}
+22.1 P :|-: Q->P
+```
+
+```{.ProofChecker .KooKMM-QL options="render font indent"}
+4.1 P:|-: P
+4.2 P, (P -> (P->Q)):|-: Q
+4.3 P, Q, (P->(Q->R)) :|-: R
+4.4 ~P, ~Q->P :|-: Q
+4.5 P, ~Q->~P :|-: Q
+```
+
+
+```{.SynChecker .Match system="KooKMM-SL"}
+1.5 P/\Q\/R->Z
+```
+
+```{.SynChecker .MatchClean system="KooKMM-SL"}
+1.6 P/\Q\/R->Z
+```
+
+~~~{.Translate .FOL system="KooKMM-QL"}
+3.1 @xOx : Everything is fine
+~~~
+
+~~~{.Translate .FOL system="KooKMM-QL" submission="none" options="nocheck"}
+3.2 F(xy) : Something is fine
+~~~
+
+~~~{.Translate .FOL system="KooKMM-QL" options="nocheck"}
+3.3 F(x) : Everything is fine
+~~~
+
+~~~{.Translate .FOL system="KooKMM-QL" submission="none"}
+3.4 Fxy : Something is fine
+| HINT you can do blah
+~~~
+
+~~~{.Translate .FOL options="nocheck"}
+3.7 AxF(x) : Everything is fine
+| For all x, x is fine
+~~~
+
+
+# HausmanSL 
+## Matchclean
+
+~~~{.SynChecker .MatchClean system="hausmanSL" }
+6.1 P . (Q \/ R)
+6.2 (P . Q) \/ R
+~~~
+
+
+# KooSL example 1
+
+MatchClean
+
+~~~{.SynChecker .MatchClean system="KooKMM-SL" }
+1.1 P /\ (Q \/ R)
+1.2 (P /\ Q) \/ R
+1.3 P /\ Q \/ R
+1.4 P /\ Q /\ R
+1.5 P /\ (Q /\ R)
+1.6 (P /\ Q) /\ R
+~~~
+
+Match
+
+~~~{.SynChecker .Match system="KooKMM-SL" }
+1.1 P /\ (Q \/ R)
+1.2 (P /\ Q) \/ R
+1.3 P /\ Q \/ R
+1.4 P /\ Q /\ R
+1.5 P /\ (Q /\ R)
+1.6 (P /\ Q) /\ R
+~~~
+
+# KooSL example 2
+
+Matchclean
+
+~~~{.SynChecker .MatchClean system="KooKMM-SL" }
+2.1 P \/ (Q /\ R)
+2.2 (P \/ Q) /\ R
+2.3 P \/ Q /\ R
+~~~
+
+Match
+
+~~~{.SynChecker .Match system="KooKMM-SL" }
+2.1 P \/ (Q /\ R)
+2.2 (P \/ Q) /\ R
+2.3 P \/ Q /\ R
+~~~
+
+
+# Default
+## Match
+
+~~~{.SynChecker .Match} 
+1.1 P \/ (Q /\ R)
+1.2 (P \/ Q) /\ R
+1.3 P \/ Q /\ R
+~~~
+
+## Matchclean
+~~~{.SynChecker .MatchClean} 
+1.1 P \/ (Q /\ R)
+1.2 (P \/ Q) /\ R
+1.3 P \/ Q /\ R
+~~~
