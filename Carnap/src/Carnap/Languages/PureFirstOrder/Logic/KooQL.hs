@@ -108,6 +108,13 @@ instance Inference KooQL PureLexiconFOL (Form Bool) where
      indirectInference UD  = Just PolyProof
      indirectInference _ = Nothing
 
+kooOpTableOrg :: (BooleanLanguage (FixLang lex (Form Bool)), Monad m)
+    => [[Operator String u m (FixLang lex (Form Bool))]]
+kooOpTableOrg = [ [ Prefix (try parseNegStrict)]
+                  , [Infix (try parseOr) AssocLeft, Infix (try parseAnd) AssocLeft]
+                  , [Infix (try parseIf) AssocNone, Infix (try parseIff) AssocNone]
+                  ]
+
 parseKooQL :: RuntimeDeductionConfig PureLexiconFOL (Form Bool) -> Parsec String u [KooQL]
 parseKooQL rtc = try quantRule <|> liftProp
     where liftProp = do r <- parseKooSL (defaultRuntimeDeductionConfig)
@@ -130,6 +137,7 @@ parseKooQL rtc = try quantRule <|> liftProp
                                                     Just r  -> return [DER r]
                                                     Nothing -> parserFail "Looks like you're citing a derived rule that doesn't exist"
 
+
 kooQLParserOptions :: FirstOrderParserOptions PureLexiconFOL u Identity
 kooQLParserOptions = FirstOrderParserOptions 
                          { atomicSentenceParser = \x -> kooParsePredicateSymbol "ABCDEFGHIJKLMNO" x
@@ -142,7 +150,7 @@ kooQLParserOptions = FirstOrderParserOptions
                          , functionParser = Just (\x -> kooParseFunctionSymbol "abcdefgh" x)
                          , hasBooleanConstants = False
                          , parenRecur = \opt recurWith  -> parenParser (recurWith opt) >>= boolean
-                         , opTable = kooOpTable
+                         , opTable = kooOpTableOrg
                          , finalValidation = const (pure ())
                          }
                     where boolean a = if isBoolean a then return a else unexpected "atomic or quantified sentence wrapped in parentheses"

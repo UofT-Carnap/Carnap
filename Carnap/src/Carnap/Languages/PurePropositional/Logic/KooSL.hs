@@ -2,6 +2,7 @@
 module Carnap.Languages.PurePropositional.Logic.KooSL
     (parseKooSLProof, kooSLCalc, kooSLNotation, KooSL, parseKooSL) where
 
+import Control.Monad.Trans (lift)
 import Data.Map as M (lookup, Map)
 import Text.Parsec
 import Carnap.Core.Data.Types (Form)
@@ -184,9 +185,21 @@ parseKooSL rtc = do r <- choice (map (try . string) ["AS","PR","MP","MTP","MT","
                                         Just r  -> return [DER r]
                                         Nothing -> parserFail "Looks like you're citing a derived rule that doesn't exist"
 
+-- wrapParser :: Monad m => ParsecT String ParserState m PureForm -> Parsec String () PureForm
+-- wrapParser p = runParserT p defaultState "input"  -- defaultState is your initial user state
+
+wrapParser :: Monad m => ParsecT String ParserState m PureForm -> ParsecT String () m PureForm
+wrapParser p = do
+    input <- getInput  -- Get the current input
+    let state = defaultState  -- Use the default state for ParserState
+    result <- Control.Monad.Trans.lift $ runParserT p state "input" input  -- Run the parser with the default state and input
+    case result of
+        Left err  -> parserFail (show err)  -- Handle errors using parserFail
+        Right res -> return res
+
 parseKooSLProof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) 
                      -> String -> [DeductionLine KooSL PurePropLexicon (Form Bool)]
-parseKooSLProof rtc = toDeductionMontague (parseKooSL rtc) (kooSLFormulaParser kooOpts)
+parseKooSLProof rtc = toDeductionMontague (parseKooSL rtc) (wrapParser (kooSLFormulaParser kooOpts))
 
 kooSLNotation :: String -> String
 kooSLNotation = map replace
@@ -203,6 +216,6 @@ kooSLCalc = mkNDCalc
     , ndProcessLine = processLineMontague
     , ndProcessLineMemo = Nothing
     , ndNotation = kooSLNotation
-    , ndParseForm = (kooSLFormulaParser kooOpts)
-    , ndParseSeq = parseSeqOver (kooSLFormulaParser kooOpts)
+    , ndParseForm = (wrapParser (kooSLFormulaParser kooOpts))
+    , ndParseSeq = parseSeqOver (wrapParser (kooSLFormulaParser kooOpts))
     } 

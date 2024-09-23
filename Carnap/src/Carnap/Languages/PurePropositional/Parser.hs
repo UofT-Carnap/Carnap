@@ -1,10 +1,12 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses #-}
+{-# LANGUAGE RankNTypes #-}
+
 module Carnap.Languages.PurePropositional.Parser 
     ( purePropFormulaParser, standardLetters, standardLettersStrict, extendedLetters, landeOpts, belotOpts, hausmanOpts
     , thomasBolducZachOpts, thomasBolducZach2019Opts, hardegreeOpts, arthurOpts, standardOpTable, standardOpTableStrict
     , calgaryOpTable, calgary2019OpTable, hausmanOpTable, howardSnyderOpTable, gamutOpTable
     , gamutOpts, bonevacOpts, howardSnyderOpts, hurleyOpts, gregoryOpts, magnusOpts, extendedPropSeqParser
-    , englishPropFormulaParser, englishPropFormulaParserStrict, kooSLFormulaParser, kooOpTable, kooOpts
+    , englishPropFormulaParser, englishPropFormulaParserStrict, kooSLFormulaParser, kooOpTable, kooOpts, ParserState, defaultState
     ) where
 
 import Carnap.Core.Data.Types
@@ -115,14 +117,13 @@ howardSnyderOpts = extendedLetters
 
 kooDispatch opt rw = (wrappedWith '(' ')' (rw opt)) >>= noatoms
     where noatoms a = if isBooleanBinary a then return a else unexpected "parentheses around an atom or negation"
-kooOpts :: Monad m => PurePropositionalParserOptions u m
+kooOpts :: Monad m => PurePropositionalParserOptions ParserState m
 kooOpts = PurePropositionalParserOptions
-                { opTable = kooOpTable
-                , atomicSentenceParser = sentenceLetterParser "PQRSTUVWXYZ"
-                , hasBooleanConstants = False
-                , parenRecur = kooDispatch
-                }
-
+            { opTable = kooOpTable
+            , atomicSentenceParser = sentenceLetterParser "PQRSTUVWXYZ"
+            , hasBooleanConstants = False
+            , parenRecur = kooDispatch
+            }
 --this parses as much formula as it can, but is happy to return an output if the
 --initial segment of a string is a formula
 purePropFormulaParser :: Monad m => PurePropositionalParserOptions u m -> ParsecT String u m PureForm
@@ -134,13 +135,46 @@ purePropFormulaParser opts = buildExpressionParser (opTable opts) subFormulaPars
                           <|> (if hasBooleanConstants opts then try (booleanConstParser <* spaces) else parserZero)
                           <|> ((schemevarParser <* spaces) <?> "")
 
-kooSLFormulaParser :: Monad m => PurePropositionalParserOptions u m -> ParsecT String u m PureForm
-kooSLFormulaParser opts = buildExpressionParser (opTable opts) subFormulaParser
-    where subFormulaParser = ((parenRecur opts) opts kooSLFormulaParser <* spaces) --formulas wrapped in parentheses
-                          <|> unaryOpParser [parseNegStrict] subFormulaParser --negations or modalizations of subformulas
-                          <|> try (atomicSentenceParser opts <* spaces)--or atoms
-                          <|> (if hasBooleanConstants opts then try (booleanConstParser <* spaces) else parserZero)
-                          <|> ((schemevarParser <* spaces) <?> "")
+
+-- Define the custom state to track whether `AND` and `OR` have been encountered
+data ParserState = ParserState { hasAnd :: Bool, hasOr :: Bool }
+
+-- Initialize the state
+defaultState :: ParserState
+defaultState = ParserState { hasAnd = False, hasOr = False }
+
+-- Update state when `AND` is encountered
+updateAndFlag :: Monad m => ParsecT String ParserState m ()
+updateAndFlag = do
+  state <- getState
+  putState state { hasAnd = True }
+
+-- Update state when `OR` is encountered
+updateOrFlag :: Monad m => ParsecT String ParserState m ()
+updateOrFlag = do
+  state <- getState
+  putState state { hasOr = True }
+
+-- Check if both AND and OR were encountered, and fail if both are found
+checkAndOrConflict :: Monad m => ParsecT String ParserState m ()
+checkAndOrConflict = do
+  state <- getState
+  if hasAnd state && hasOr state
+    then fail "Cannot have both AND and OR in the expression"
+    else return ()
+
+-- Main formula parser, rejects formulas with both AND and OR
+kooSLFormulaParser :: Monad m => PurePropositionalParserOptions ParserState m -> ParsecT String ParserState m PureForm
+kooSLFormulaParser opts = do
+  result <- buildExpressionParser kooOpTable subFormulaParser
+  checkAndOrConflict  -- Check for AND/OR conflict after parsing
+  return result
+  where
+    subFormulaParser = ((parenRecur opts) opts kooSLFormulaParser <* spaces) -- formulas wrapped in parentheses
+                   <|> unaryOpParser [parseNegStrict] subFormulaParser -- negations or modalizations of subformulas
+                   <|> try (atomicSentenceParser opts <* spaces) -- or atoms
+                   <|> (if hasBooleanConstants opts then try (booleanConstParser <* spaces) else parserZero)
+                   <|> ((schemevarParser <* spaces) <?> "")
 
 instance ParsableLex (Form Bool) PurePropLexicon where
         langParser = purePropFormulaParser extendedLetters { hasBooleanConstants = True }
@@ -200,12 +234,17 @@ howardSnyderOpTable = [[ Prefix (try parseNeg)
                        , Infix (try parseIff) AssocNone
                        ]]
 
-kooOpTable :: (BooleanLanguage (FixLang lex (Form Bool)), Monad m)
-    => [[Operator String u m (FixLang lex (Form Bool))]]
-kooOpTable = [ [ Prefix (try parseNegStrict)]
-                  , [Infix (try parseOr) AssocNone, Infix (try parseAnd) AssocNone]
-                  , [Infix (try parseIf) AssocNone, Infix (try parseIff) AssocNone]
-                  ]
+kooOpTable :: forall lex m. (BooleanLanguage (FixLang lex (Form Bool)), Monad m)
+           => [[Operator String ParserState m (FixLang lex (Form Bool))]]
+kooOpTable =
+    [ [ Prefix (try parseNegStrict) ]
+    , [ Infix (try (parseOr >>= \f -> updateOrFlag >> return f)) AssocLeft
+      , Infix (try (parseAnd >>= \f -> updateAndFlag >> return f)) AssocLeft
+      ]
+    , [ Infix (try parseIf) AssocNone
+      , Infix (try parseIff) AssocNone
+      ]
+    ]
 
 -----------------------
 --  Special Parsers  --
