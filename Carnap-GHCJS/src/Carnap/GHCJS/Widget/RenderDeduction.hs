@@ -99,11 +99,11 @@ renderTreeMontague ded w calc = treeToElement asLine asSubproof
             (theWrapper, theLine, theForm, _) <- lineBase w calc n (displayVia calc f) norule "show"
             (Just theHead) <- createElement w (Just "span")
             setInnerHTML theHead (Just "Show ")
-            setAttribute theHead "class" "show-cross"  -- Apply the strikethrough class to "Show "
             appendChild theLine (Just theHead)
             appendChild theLine (Just theForm)
             if complete n then do
                 setAttribute theLine "class" "show"  -- Only apply 'show' class to the whole line
+                setAttribute theHead "class" "show-cross"  -- Apply the strikethrough class to "Show "
             else do
                 setAttribute theLine "class" "show"
             return theWrapper
