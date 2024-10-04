@@ -31,8 +31,8 @@ preShowClean :: PurePropLanguage (Form Bool) -> String
 preShowClean = show
             & outside (binaryOpPrism _if)  .~ (\(x,y) -> schematize theIf [dropOn isJunction x, dropOn isJunction y])
             & outside (binaryOpPrism _iff) .~ (\(x,y) -> schematize theIff [dropOn isJunction x, dropOn isJunction y])
-            & outside (binaryOpPrism _and) .~ (\(x,y) -> schematize theAnd [dropOn isJunction x, preShowClean y])
-            & outside (binaryOpPrism _or)  .~ (\(x,y) -> schematize theOr [dropOn isJunction x, preShowClean y])
+            & outside (binaryOpPrism _and) .~ (\(x,y) -> schematize theAnd [preShowClean x, preShowClean y])
+            & outside (binaryOpPrism _or)  .~ (\(x,y) -> schematize theOr [preShowClean x, preShowClean y])
     where isAnd x = x ^? (binaryOpPrism _and) /= Nothing
           isOr x = x ^? (binaryOpPrism _or) /= Nothing
           dropOn cond x = if cond x then dropParens x else preShowClean x

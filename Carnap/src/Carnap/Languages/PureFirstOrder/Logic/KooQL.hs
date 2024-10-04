@@ -180,12 +180,22 @@ kooQLFormulaParser = kooParserFromOptions kooQLParserOptions
 parseKooQLProof ::  RuntimeDeductionConfig PureLexiconFOL (Form Bool) -> String -> [DeductionLine KooQL PureLexiconFOL (Form Bool)]
 parseKooQLProof ders = toDeductionMontague (parseKooQL ders) kooQLFormulaParser
 
+cleanParen :: String -> String
+cleanParen "" = ""
+cleanParen (x : '(': y : ')' : xs)
+    | x `elem` "ABCDEFGHIJKLMNO" = x : y : (cleanParen xs)
+    | otherwise = x : '(': y : ')' : (cleanParen xs)
+cleanParen (x:xs) = x : (cleanParen xs)
+
+kooQLNotation :: String -> String
+kooQLNotation = kooSLNotation . cleanParen
+
 kooQLCalc = mkNDCalc
     { ndRenderer = MontagueStyle
     , ndParseProof = parseKooQLProof
     , ndProcessLine = hoProcessLineMontague
     , ndProcessLineMemo = Just hoProcessLineMontagueMemo
-    , ndNotation = kooSLNotation
+    , ndNotation = kooQLNotation
     , ndParseForm = kooQLFormulaParser
     , ndParseSeq = parseSeqOver kooQLFormulaParser
     }
