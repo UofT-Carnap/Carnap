@@ -185,29 +185,29 @@ parseKooSL rtc = do r <- choice (map (try . string) ["AS","PR","MP","MTP","MT","
                                         Nothing -> parserFail "Looks like you're citing a derived rule that doesn't exist"
 
 parseKooSLBasic :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [KooSL]
-parseKooSLBasic rtc = do r <- choice (map (try . string) ["AS","PR","MP","MTP","MT","DD","DNE","DNI", "DN", "SC", "S", "ADJ",  "ADD" , "BC", "CB", "CDJ", "CD", "ID", "R", "TR", "NC", "NB", "DM", "MC", "D-"])
-                    case r of
-                        "AS"   -> return [AS]
-                        "PR"   -> return [PR (problemPremises rtc)]
-                        "MP"   -> return [MP]
-                        "MT"   -> return [MT]
-                        "DD"   -> return [DD]
-                        "DNE"  -> return [DNE]
-                        "DNI"  -> return [DNI]
-                        "DN"   -> return [DNE,DNI]
-                        "CD"   -> return [CP1,CP2]
-                        "ID"   -> return [ID1,ID2,ID3,ID4,ID5,ID6,ID7,ID8]
-                        "ADJ"  -> return [ADJ]
-                        "S"    -> return [S1, S2]
-                        "ADD"  -> return [ADD1, ADD2]
-                        "MTP"  -> return [MTP1, MTP2]
-                        "R"    -> return [R]
-                        "TR"   -> return [TR1, TR2]
-                        "SC"   -> return [SC1, SC2, SC3]
-                        "D-" -> do  rn <- many1 upper
-                                    case M.lookup rn (derivedRules rtc) of
-                                        Just r  -> return [DER r]
-                                        Nothing -> parserFail "Looks like you're citing a derived rule that doesn't exist"
+parseKooSLBasic rtc =   (do r <- choice (map (try . string) ["AS","PR","MP","MTP","MT","DD","DNE","DNI", "DN", "SC", "S", "ADJ",  "ADD" , "CD", "ID", "R", "TR", "D-"])
+                            case r of 
+                                "AS"   -> return [AS]
+                                "PR"   -> return [PR (problemPremises rtc)]
+                                "MP"   -> return [MP]
+                                "MT"   -> return [MT]
+                                "DD"   -> return [DD]
+                                "DNE"  -> return [DNE]
+                                "DNI"  -> return [DNI]
+                                "DN"   -> return [DNE,DNI]
+                                "CD"   -> return [CP1,CP2]
+                                "ID"   -> return [ID1,ID2,ID3,ID4,ID5,ID6,ID7,ID8]
+                                "ADJ"  -> return [ADJ]
+                                "S"    -> return [S1, S2]
+                                "ADD"  -> return [ADD1, ADD2]
+                                "MTP"  -> return [MTP1, MTP2]
+                                "R"    -> return [R]
+                                "TR"   -> return [TR1, TR2]
+                                "SC"   -> return [SC1, SC2, SC3]
+                                "D-" -> do  rn <- many1 upper
+                                            case M.lookup rn (derivedRules rtc) of
+                                                Just r  -> return [DER r]
+                                                Nothing -> parserFail "Looks like you're citing a derived rule that doesn't exist")
 
 parseKooSLBasicProof :: RuntimeDeductionConfig PurePropLexicon (Form Bool) 
                      -> String -> [DeductionLine KooSL PurePropLexicon (Form Bool)]
