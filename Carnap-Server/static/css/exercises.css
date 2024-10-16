@@ -207,6 +207,7 @@ div:has(> div.exercise) {
     margin-bottom:50pt;
     line-height:1.2em;
     font-size:10pt;
+    float: left;
 }
 
 .numbering {
@@ -326,8 +327,8 @@ div:has(> div.exercise) {
 }
 
 .proofDisplay {
-    display:inline-block;
-    z-index:-1;
+    /* display:inline-block; */
+    z-index:0;
     vertical-align:top;
     padding-left:60px;
     position:relative;
@@ -335,6 +336,9 @@ div:has(> div.exercise) {
     padding-bottom:5pt;
     overflow:auto;
     max-height:100%;
+    float: inline-start;
+    margin: auto;
+    max-width: fit-content;
 }
 
 .proofDisplay .subproof {
@@ -374,13 +378,13 @@ div:has(> div.exercise) {
 }
 
 .montagueDisplay .qed div {
-    border-left:1px solid black;
+    border-left: 0px;
     border-bottom:1px solid black;
     height:25px;
 }
 
 .montagueDisplay .subproof > div.qed {
-    padding-left: 5pt;
+    padding-left: 0pt;
 }
 
 .montagueDisplay .show-cross {

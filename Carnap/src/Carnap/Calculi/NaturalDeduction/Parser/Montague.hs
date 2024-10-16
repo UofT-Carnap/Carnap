@@ -63,7 +63,7 @@ toProofTreeMontague ded n = case ded !! (n - 1)  of
                 where --for scanning, we ignore the depth of the QED line
                       checkDep m m' = takeRange m' m >>= scan . init
                       matchShow = let ded' = drop n ded in
-                          case findIndex (qedAt d) ded' of
+                          case findIndex (qedAt (d + 1)) ded' of
                               Nothing -> err "Open subproof (no corresponding QED)"
                               Just m' -> isSubProof n (n + m')
                       isSubProof n m = case lineRange n m of
