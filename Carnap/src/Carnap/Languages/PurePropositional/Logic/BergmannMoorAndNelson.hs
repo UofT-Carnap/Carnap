@@ -119,22 +119,34 @@ instance Inference LogicBookSD PurePropLexicon (Form Bool) where
 
     globalRestriction (Left ded) n CondIntro1 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2])]
     globalRestriction (Left ded) n CondIntro2 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2])]
-    globalRestriction (Left ded) n BicoIntro1 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
-    globalRestriction (Left ded) n BicoIntro2 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
-    globalRestriction (Left ded) n BicoIntro3 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
-    globalRestriction (Left ded) n BicoIntro4 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
-    globalRestriction (Left ded) n DisjElim1 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
-    globalRestriction (Left ded) n DisjElim2 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
-    globalRestriction (Left ded) n DisjElim3 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
-    globalRestriction (Left ded) n DisjElim4 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
-    globalRestriction (Left ded) n NegeElim1 = Just $ fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
-    globalRestriction (Left ded) n NegeElim2 = Just $ fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
-    globalRestriction (Left ded) n NegeElim3 = Just $ fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
-    globalRestriction (Left ded) n NegeElim4 = Just $ fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
     globalRestriction (Left ded) n NegeIntro1 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2, lneg $ phin 2])]
     globalRestriction (Left ded) n NegeIntro2 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2, lneg $ phin 2])]
     globalRestriction (Left ded) n NegeIntro3 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2, lneg $ phin 2])]
     globalRestriction (Left ded) n NegeIntro4 = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n NegeElim1 = Just $ 
+        fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n NegeElim2 = Just $ 
+        fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n NegeElim3 = Just $ 
+        fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n NegeElim4 = Just $ 
+        fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n DisjElim1 = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
+    globalRestriction (Left ded) n DisjElim2 = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
+    globalRestriction (Left ded) n DisjElim3 = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
+    globalRestriction (Left ded) n DisjElim4 = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
+    globalRestriction (Left ded) n BicoIntro1 = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
+    globalRestriction (Left ded) n BicoIntro2 = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
+    globalRestriction (Left ded) n BicoIntro3 = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
+    globalRestriction (Left ded) n BicoIntro4 = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
     globalRestriction _ _ _ = Nothing
 
     restriction (Pr prems) = Just (premConstraint prems)
@@ -142,8 +154,8 @@ instance Inference LogicBookSD PurePropLexicon (Form Bool) where
 
 parseLogicBookSD :: RuntimeDeductionConfig PurePropLexicon (Form Bool) -> Parsec String u [LogicBookSD]
 parseLogicBookSD rtc = do r <- choice (map (try . string) ["AS","PR", "Assumption" ,"&I","/\\I", "∧I","&E","/\\E","∧E","CI","->I","→I", ">I", "⊃I","→E", "⊃E","CE","->E"
-                                                          , "→E" , ">E" ,"~I","-I", "¬I","~E","-E","¬E" ,"vI","\\/I","∨I", "vE","\\/E", "∨E","BI","<->I", "↔I"
-                                                          , "≡I" , "BE", "<->E", "↔E", "≡E", "R"]) <|> ((++) <$> string "A/" <*> many anyChar)
+                                                          , "→E" , ">E" ,"~I","-I", "¬I","~E","-E","¬E" ,"vI","\\/I","∨I", "vE","\\/E", "∨E","BI","<->I", "<>I", "↔I"
+                                                          , "≡I" , "BE", "<->E", "<>E", "↔E", "≡E", "R"]) <|> ((++) <$> string "A/" <*> many anyChar)
                           case r of
                             r | r `elem` ["AS"] -> return [AS ""]
                               | r `elem` ["A/>I", "A/->I"] -> return [AS "/⊃I"]
@@ -157,8 +169,8 @@ parseLogicBookSD rtc = do r <- choice (map (try . string) ["AS","PR", "Assumptio
                               | r `elem` ["~E","¬E","-E"]  -> return [NegeElim1, NegeElim2, NegeElim3, NegeElim4]
                               | r `elem` ["vI","\\/I","∨I"] -> return [DisjIntro1, DisjIntro2]
                               | r `elem` ["vE","\\/E","∨E"] -> return [DisjElim1, DisjElim2,DisjElim3, DisjElim4]
-                              | r `elem` ["BI","<->I","↔I","≡I"] -> return [BicoIntro1, BicoIntro2, BicoIntro3, BicoIntro4]
-                              | r `elem` ["BE","<->E","↔E","≡E"] -> return [BicoElim1, BicoElim2]
+                              | r `elem` ["BI","<->I", "<>I" ,"↔I","≡I"] -> return [BicoIntro1, BicoIntro2, BicoIntro3, BicoIntro4]
+                              | r `elem` ["BE","<->E", "<>E", "↔E","≡E"] -> return [BicoElim1, BicoElim2]
                             'A':'/':rest -> return [AS (" / " ++ rest)]
                             "R" -> return [Reiterate]
 
@@ -304,22 +316,38 @@ instance Inference LogicBookSDPlus PurePropLexicon (Form Bool) where
 
     globalRestriction (Left ded) n (SD CondIntro1) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2])]
     globalRestriction (Left ded) n (SD CondIntro2) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2])]
-    globalRestriction (Left ded) n (SD BicoIntro1) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
-    globalRestriction (Left ded) n (SD BicoIntro2) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
-    globalRestriction (Left ded) n (SD BicoIntro3) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
-    globalRestriction (Left ded) n (SD BicoIntro4) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
-    globalRestriction (Left ded) n (SD DisjElim1) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
-    globalRestriction (Left ded) n (SD DisjElim2) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
-    globalRestriction (Left ded) n (SD DisjElim3) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
-    globalRestriction (Left ded) n (SD DisjElim4) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
-    globalRestriction (Left ded) n (SD NegeElim1) = Just $ fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
-    globalRestriction (Left ded) n (SD NegeElim2) = Just $ fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
-    globalRestriction (Left ded) n (SD NegeElim3) = Just $ fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
-    globalRestriction (Left ded) n (SD NegeElim4) = Just $ fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
-    globalRestriction (Left ded) n (SD NegeIntro1) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2, lneg $ phin 2])]
-    globalRestriction (Left ded) n (SD NegeIntro2) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2, lneg $ phin 2])]
-    globalRestriction (Left ded) n (SD NegeIntro3) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2, lneg $ phin 2])]
-    globalRestriction (Left ded) n (SD NegeIntro4) = Just $ fitchAssumptionCheck n ded [([phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n (SD NegeIntro1) = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n (SD NegeIntro2) = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n (SD NegeIntro3) = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n (SD NegeIntro4) = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n (SD NegeElim1) = Just $ 
+        fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n (SD NegeElim2) = Just $ 
+        fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n (SD NegeElim3) = Just $ 
+        fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n (SD NegeElim4) = Just $ 
+        fitchAssumptionCheck n ded [([lneg $ phin 1], [phin 2, lneg $ phin 2])]
+    globalRestriction (Left ded) n (SD DisjElim1) = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
+    globalRestriction (Left ded) n (SD DisjElim2) = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
+    globalRestriction (Left ded) n (SD DisjElim3) = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
+    globalRestriction (Left ded) n (SD DisjElim4) = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 3]), ([phin 2], [phin 3])]
+    globalRestriction (Left ded) n (SD BicoIntro1) = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
+    globalRestriction (Left ded) n (SD BicoIntro2) = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
+    globalRestriction (Left ded) n (SD BicoIntro3) = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
+    globalRestriction (Left ded) n (SD BicoIntro4) = Just $ 
+        fitchAssumptionCheck n ded [([phin 1], [phin 2]), ([phin 2], [phin 1])]
     globalRestriction _ _ _ = Nothing
 
     restriction (SD x ) = restriction x
